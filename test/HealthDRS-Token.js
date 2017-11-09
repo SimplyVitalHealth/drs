@@ -13,8 +13,7 @@ contract('HealthDRS :: Token', function(accounts) {
 
   beforeEach(async function() {
     this.token = await HealthCashMock.new()
-    this.drs = await HealthDRS.new()
-    await this.drs.setHealthCashToken(this.token.address)
+    this.drs = await HealthDRS.new(this.token.address)
   })
 
   it('should have a valid address as token contract', async function() {

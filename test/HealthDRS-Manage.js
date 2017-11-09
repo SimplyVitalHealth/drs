@@ -12,7 +12,8 @@ import isAddress from './helpers/isAddress'
 contract('HealthDRS :: Manage', function(accounts) {
 
   beforeEach(async function() {
-    this.drs = await HealthDRS.new()
+    this.token = await HealthCashMock.new()
+    this.drs = await HealthDRS.new(this.token.address)
     this.url = 'https://blogs.scientificamerican.com/observations/consciousness-goes-deeper-than-you-think/'
     let tx = await this.drs.createService(this.url)
     this.service = tx.logs[0].args._service       
