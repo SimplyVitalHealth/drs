@@ -13,8 +13,7 @@ contract('HealthDRS :: Sell', function(accounts) {
 
   beforeEach(async function() {
     this.token = await HealthCashMock.new()
-    this.drs = await HealthDRS.new()
-    await this.drs.setHealthCashToken(this.token.address)
+    this.drs = await HealthDRS.new(this.token.address)
     this.url = 'https://blogs.scientificamerican.com/observations/consciousness-goes-deeper-than-you-think/'
     let tx = await this.drs.createService(this.url)
     this.service = tx.logs[0].args._service        
@@ -69,14 +68,15 @@ contract('HealthDRS :: Sell', function(accounts) {
    })
  
    it('should not be able to purchase an unoffered key', async function() {
-    let tx = await this.drs.createKey(this.service)
-    let key = tx.logs[0].args._key
+    
+      let tx = await this.drs.createKey(this.service)
+      let key = tx.logs[0].args._key
+      this.token.transfer(accounts[1],1)
 
-    this.token.transfer(accounts[1],1)
-    await this.token.approve(this.drs.address, 1, {from: accounts[1]})  
-    await this.drs.purchaseKey(key, 1, {from: accounts[1]})
-    let owner = await this.drs.isKeyOwner(key,accounts[0])
-    owner.should.equal(true)  
+      await this.token.approve(this.drs.address, 1, {from: accounts[1]})  
+      await this.drs.purchaseKey(key, {from: accounts[1]})
+      let owner = await this.drs.isKeyOwner(key,accounts[0])
+      owner.should.equal(true)  
    })
 
 
@@ -89,7 +89,7 @@ contract('HealthDRS :: Sell', function(accounts) {
     //give account some HLTH to spend 
     this.token.transfer(accounts[1],5)
     await this.token.approve(this.drs.address, 5, {from: accounts[1]})  
-    await this.drs.purchaseKey(key, 5, {from: accounts[1]})
+    await this.drs.purchaseKey(key, {from: accounts[1]})
 
     let owner = await this.drs.isKeyOwner(key,accounts[1])
     owner.should.equal(true)  
@@ -97,6 +97,27 @@ contract('HealthDRS :: Sell', function(accounts) {
     let balance = await this.token.balanceOf(accounts[0])
     balance.should.be.bignumber.equal(100,'Should have gotten 5 tokens back')
    })
+
+   it('should not be able to purchase a shared key', async function() {
+    let tx = await this.drs.createKey(this.service)
+    let key = tx.logs[0].args._key
+    await this.drs.setKeyPermissions(key, true, false, true);    
+    await this.drs.shareKey(key, accounts[1])
+    await this.drs.createSalesOffer(key, accounts[1], 5, false)
+
+    //give account some HLTH to spend 
+    this.token.transfer(accounts[1],5)
+    await this.token.approve(this.drs.address, 5, {from: accounts[1]})  
+    await this.drs.purchaseKey(key, {from: accounts[1]})
+
+    await this.drs.unshareKey(key, accounts[1])    
+    let owner = await this.drs.isKeyOwner(key,accounts[1])
+    owner.should.equal(false)  
+
+    let balance = await this.token.balanceOf(accounts[0])
+    balance.should.be.bignumber.equal(95,'Should not have gotten 5 tokens back')
+   })
+
 
    it('a key owner should be able to cancel a sales offer', async function() {
     let tx1 = await this.drs.createKey(this.service)
@@ -127,7 +148,7 @@ contract('HealthDRS :: Sell', function(accounts) {
     
     this.token.transfer(accounts[1],5)
     await this.token.approve(this.drs.address, 5, {from: accounts[1]})  
-    await this.drs.purchaseKey(key, 5, {from: accounts[1]})
+    await this.drs.purchaseKey(key, {from: accounts[1]})
 
     key = await this.drs.getKey(key)
     key[3].should.equal(false) //canSell 

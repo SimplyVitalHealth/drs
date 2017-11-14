@@ -4,12 +4,14 @@ const should = require('chai')
   .use(require('chai-bignumber')(BigNumber))
   .should()
 
+var HealthCashMock = artifacts.require('./helpers/HealthCashMock.sol');
 var HealthDRS = artifacts.require("./HealthDRS.sol")
 
 contract('HealthDRS :: Ownable', function(accounts) {
 
   beforeEach(async function() {
-    this.ownable = await HealthDRS.new()
+    this.token = await HealthCashMock.new()
+    this.ownable = await HealthDRS.new(this.token.address)
   })
 
   it('should have an owner', async function() {

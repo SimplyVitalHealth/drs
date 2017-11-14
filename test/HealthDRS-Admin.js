@@ -13,8 +13,7 @@ contract('HealthDRS :: Admin', function(accounts) {
 
   beforeEach(async function() {
     this.token = await HealthCashMock.new()
-    this.drs = await HealthDRS.new()
-    await this.drs.setHealthCashToken(this.token.address)
+    this.drs = await HealthDRS.new(this.token.address)
   })
   
   it('should enable the token to be updated by admin', async function() {
