@@ -18,11 +18,11 @@ Features:
 
 * [Overview](#overview)
 * [Installation](#installation)
+* [Audit](#️audit)
 * [Testing](#️testing)
 * [Notes](#notes)
 * [Usage](#usage)
 * [Credits](#️credits)
-* [Audit](#️audit)
 * [License](#license)
 </details>
 
