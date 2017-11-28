@@ -18,7 +18,6 @@ Features:
 
 * [Overview](#overview)
 * [Installation](#installation)
-* [Audit](#️audit)
 * [Testing](#️testing)
 * [Notes](#notes)
 * [Usage](#usage)
@@ -102,7 +101,7 @@ improvements.​ ​ We​ ​ wish​ ​ the​ ​ SVH​ ​ team​ ​ wel
 
 Yo Sub Kwon, Founder Hosho Group
 
-Read the [complete audit report]. 
+Read the [complete audit report](https://github.com/Health-Nexus/drs/blob/master/SimplyVitalHealthContractAudit.pdf). 
 
 
 ## Credits
