@@ -22,6 +22,7 @@ Features:
 * [Notes](#notes)
 * [Usage](#usage)
 * [Credits](#️credits)
+* [Audit](#️audit)
 * [License](#license)
 </details>
 
@@ -81,6 +82,28 @@ For example, one could create keys with limited uses, or that expired at a speci
 ## Usage
 
 For an overview of the smart-contract's functionality review the [wiki](https://github.com/Health-Nexus/drs/wiki).
+
+## Audit
+
+This smart contract has been audited by Hosho Group.
+
+"We​ ​ are​ ​ grateful​ ​ to​ ​ have​ ​ been​ ​ given​ ​ the​ ​ opportunity​ ​ to​ ​ work​ ​ with​ ​ the​ ​ SimplyVitalHealth​ ​ team​ ​ on
+this​ ​ project​ ​ and​ ​ audit.​ ​ They​ ​ have​ ​ been​ ​ very​ ​ receptive​ ​ to​ ​ our​ ​ feedback​ ​ and​ ​ were​ ​ agreeable​ ​ in
+correcting​ ​ the​ ​ small​ ​ numbers​ ​ of​ ​ issues​ ​ found.
+
+During​ ​ the​ ​ initial​ ​ static​ ​ analysis,​ ​ several​ ​ possible​ ​ vulnerabilities​ ​ were​ ​ noted,​ ​ and​ ​ the​ ​ SVH​ ​ team
+was​ ​ very​ ​ quick​ ​ to​ ​ patch​ ​ these​ ​ and​ ​ return​ ​ the​ ​ updated​ ​ code.​ ​ They​ ​ implemented​ ​ the​ ​ required​ ​ fixes
+to​ ​ ensure​ ​ the​ ​ long-term​ ​ health​ ​ and​ ​ stability​ ​ of​ ​ the​ ​ HealthDRS​ ​ system​ ​ as​ ​ it​ ​ works​ ​ within​ ​ the
+Ethereum​ ​ ecosystem.​ ​ It​ ​ was​ ​ also​ ​ noted​ ​ that​ ​ there​ ​ were​ ​ some​ ​ code​ ​ paths​ ​ that​ ​ were​ ​ not​ ​ executable
+during​ ​ dynamic​ ​ testing​ ​ and​ ​ the​ ​ SVH​ ​ team​ ​ corrected​ ​ these​ ​ to​ ​ a ​ ​ functional​ ​ state.
+
+Even​ ​ beyond​ ​ the​ ​ small​ ​ issues​ ​ found,​ ​ the​ ​ SVH​ ​ team​ ​ implemented​ ​ some​ ​ of​ ​ our​ ​ suggested
+improvements.​ ​ We​ ​ wish​ ​ the​ ​ SVH​ ​ team​ ​ well​ ​ with​ ​ the​ ​ HealthDRS​ ​ system​ ​ going​ ​ forwards."
+
+Yo Sub Kwon, Founder Hosho Group
+
+Read the [complete audit report]. 
+
 
 ## Credits
 
