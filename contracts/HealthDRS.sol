@@ -1,7 +1,7 @@
-pragma solidity 0.4.15;
+pragma solidity 0.4.18;
 
 import 'zeppelin-solidity/contracts/ownership/Ownable.sol';
-import 'zeppelin-solidity/contracts/token/StandardToken.sol';
+import 'zeppelin-solidity/contracts/token/ERC20/StandardToken.sol';
 
 /**
 * Health Decentralized Record Service (DRS)
@@ -44,17 +44,17 @@ contract HealthDRS is Ownable {
    bytes32[] public keyList;
 
    mapping(bytes32 => address[]) public owners;
-   mapping(bytes32 => bytes32) public keyData;       
+   mapping(bytes32 => bytes32) public keyData;
    mapping(bytes32 => SalesOffer) public salesOffers;
-   mapping(bytes32 => bytes32) public tradeOffers;   
+   mapping(bytes32 => bytes32) public tradeOffers;
 
    event ServiceCreated(address indexed _owner, bytes32 indexed _service);
    event KeyCreated(address indexed _owner, bytes32 indexed _key);
    event KeySold(bytes32 _key, address indexed _seller, address indexed _buyer, uint _price);
    event KeysTraded(bytes32 indexed _key1, bytes32 indexed _key2);
    event Access(address indexed _owner, bytes32 indexed _from, bytes32 indexed _to, uint _time, string _data);
-   event Message(address indexed _owner, bytes32 indexed _from, bytes32 indexed _to, uint _time, string _category, string _data);   
-   event Log(address indexed _owner, bytes32 indexed _from, uint _time, string _data);       
+   event Message(address indexed _owner, bytes32 indexed _from, bytes32 indexed _to, uint _time, string _category, string _data);
+   event Log(address indexed _owner, bytes32 indexed _from, uint _time, string _data);
 
    modifier validKey(bytes32 key) {
      require(keys[key].owner != address(0));
@@ -77,13 +77,13 @@ contract HealthDRS is Ownable {
 
    modifier canSell(bytes32 key) {
      require(keys[key].canSell);
-     require(owners[key].length == 0);     
+     require(owners[key].length == 0);
      _;
    }
 
    modifier canTrade(bytes32 key) {
      require(keys[key].canTrade);
-     require(owners[key].length == 0);          
+     require(owners[key].length == 0);
      _;
    }
 
@@ -94,8 +94,8 @@ contract HealthDRS is Ownable {
 
    //prevent accidentally​ sending/trapping ether
    function() {
-       revert(); 
-   } 
+       revert();
+   }
 
   //require token specified at deployment
   function HealthDRS(StandardToken _token) {
@@ -174,7 +174,7 @@ contract HealthDRS is Ownable {
    function recoverTokens(StandardToken _token, uint amount) public onlyOwner {
        _token.transfer(owner, amount);
    }
- 
+
    function setHealthCashToken(StandardToken _token) public onlyOwner {
        token = _token;
    }
@@ -198,22 +198,22 @@ contract HealthDRS is Ownable {
 
    function createKey(bytes32 service)
        public
-       ownsService(service)       
+       ownsService(service)
    {
        issueKey(service, msg.sender);
    }
-  
+
    function issueKey(bytes32 service, address issueTo)
        public
-       ownsService(service) 
+       ownsService(service)
    {
        bytes32 id = keccak256(service, now, issueTo);
        require(keys[id].owner == address(0));
-       keys[id].owner = issueTo;      
+       keys[id].owner = issueTo;
        keys[id].service = service;
-       keyList.push(id);       
-       KeyCreated(issueTo, id);       
-   }       
+       keyList.push(id);
+       KeyCreated(issueTo, id);
+   }
 
   /**
   * Share Services and Keys
@@ -285,7 +285,7 @@ contract HealthDRS is Ownable {
        cancelTradeOffer(key);
        salesOffers[key].buyer = buyer;
        salesOffers[key].price = price;
-       salesOffers[key].canSell = _canSell;       
+       salesOffers[key].canSell = _canSell;
    }
 
    function cancelSalesOffer(bytes32 key)
@@ -299,7 +299,7 @@ contract HealthDRS is Ownable {
 
    function purchaseKey(bytes32 key)
        public
-       canSell(key)               
+       canSell(key)
    {
 
       //require explicit authority to spend tokens on the purchasers behalf
@@ -311,7 +311,7 @@ contract HealthDRS is Ownable {
       * to the primary owner of the key.
       */
       assert(token.transferFrom(msg.sender, keys[key].owner, salesOffers[key].price));
-     
+
       KeySold(key, keys[key].owner, msg.sender, salesOffers[key].price);
       keys[key].owner = msg.sender;
 
@@ -327,12 +327,12 @@ contract HealthDRS is Ownable {
    * both keys have to be authorized
    * to trade by their respective services.
    */
-    function createTradeOffer(bytes32 have, bytes32 want) 
+    function createTradeOffer(bytes32 have, bytes32 want)
         public
         ownsKey(have)
-        validKey(want)        
-        canTrade(have)       
-        canTrade(want)               
+        validKey(want)
+        canTrade(have)
+        canTrade(want)
     {
         //cancel sales offer & create a trade offer
         cancelSalesOffer(have);
@@ -349,12 +349,12 @@ contract HealthDRS is Ownable {
     function tradeKey(bytes32 have, bytes32 want)
         public
         ownsKey(have)
-        validKey(want)           
-        canTrade(have)       
-        canTrade(want)       
+        validKey(want)
+        canTrade(have)
+        canTrade(want)
     {
         require(tradeOffers[want] == have);
-         
+
         KeysTraded(want, have);
         //complete the trade
         keys[have].owner = keys[want].owner;
@@ -384,7 +384,7 @@ contract HealthDRS is Ownable {
        bool canSell_)
        public
        validKey(key)
-       ownsService(keys[key].service)          
+       ownsService(keys[key].service)
    {
        keys[key].canShare = canShare_;
        if (canShare_ == false) {
@@ -397,11 +397,11 @@ contract HealthDRS is Ownable {
        }
 
        keys[key].canSell = canSell_;
-       if (canSell_ == false) {               
+       if (canSell_ == false) {
            salesOffers[key].buyer = address(0);
            salesOffers[key].price = 0;
-           salesOffers[key].canSell = false;           
-       }           
+           salesOffers[key].canSell = false;
+       }
 
    }
 
@@ -442,11 +442,11 @@ contract HealthDRS is Ownable {
    function setKeyData(bytes32 key, bytes32 dataKey, bytes32 dataValue)
        public
        validKey(key)
-       ownsService(keys[key].service)       
+       ownsService(keys[key].service)
    {
        keyData[keccak256(key,dataKey)] = dataValue;
    }
-  
+
    function getKeyData(bytes32 key, bytes32 dataKey)
        public
        constant
@@ -498,7 +498,7 @@ contract HealthDRS is Ownable {
    function log(bytes32 from, string data)
        public
    {
-       require((keys[from].owner != address(0) && isKeyOwner(from, msg.sender)) || 
+       require((keys[from].owner != address(0) && isKeyOwner(from, msg.sender)) ||
                isServiceOwner(from, msg.sender));
 
        Log(msg.sender, from, now, data);
