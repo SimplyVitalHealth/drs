@@ -1,4 +1,4 @@
-pragma solidity 0.4.15;
+pragma solidity ^0.4.15;
 
 import 'zeppelin-solidity/contracts/ownership/Ownable.sol';
 import 'zeppelin-solidity/contracts/token/StandardToken.sol';
@@ -164,6 +164,14 @@ contract HealthDRS is Ownable {
    {
       services[service].url = url;
    }
+
+   function getOwnersLength(bytes32 key)
+       public 
+       constant
+       returns (uint256) 
+    {
+        return owners[key].length;
+    }
 
    //user must authorize this contract to spend Health Cash (HLTH)
    function authorizedToSpend() public constant returns (uint) {
