@@ -81,6 +81,7 @@ For example, one could create keys with limited uses, or that expired at a speci
 ## Usage
 
 For an overview of the smart-contract's functionality review the [wiki](https://github.com/Health-Nexus/drs/wiki).
+On day one, users will be able to access this programmatically or through the Mist Ethereum wallet.  An open source server client and UI are also in the works.
 
 ## Audit
 
