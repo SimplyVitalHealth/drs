@@ -52,4 +52,23 @@ contract('HealthDRS :: Admin', function(accounts) {
     secondAddress.should.not.equal(accounts[1])  
   })
 
+  it('minimum hold should be updateable by admin', async function() {
+    let minimumHold = await this.drs.minimumHold()
+    await this.drs.setMinimumHold(5000)
+    let newMinimumHold = await this.drs.minimumHold()
+
+    newMinimumHold.should.be.bignumber.not.equal(minimumHold)  
+    newMinimumHold.should.be.bignumber.equal(5000)  
+  })
+
+  it('minimum hold should only be updateable by admin', async function() {
+    let minimumHold = await this.drs.minimumHold()
+    await this.drs.setMinimumHold(5000,{from: accounts[1]})    
+    let newMinimumHold = await this.drs.minimumHold()
+
+    newMinimumHold.should.be.bignumber.equal(minimumHold)  
+    newMinimumHold.should.be.bignumber.not.equal(5000)  
+  })
+
+
 })

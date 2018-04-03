@@ -17,6 +17,7 @@ contract HealthDRS is Ownable {
    StandardToken public token;
    address public latestContract = address(this);
    uint8 public version = 1;
+   uint public minimumHold = 1000;   
 
    struct Service {
        string url;
@@ -89,6 +90,12 @@ contract HealthDRS is Ownable {
 
    modifier canShare(bytes32 key) {
      require(keys[key].canShare);
+     _;
+   }
+
+   //certain functions require the user to have tokens
+   modifier holdingTokens() {
+     require(token.balanceOf(msg.sender) >= minimumHold);
      _;
    }
 
@@ -191,11 +198,18 @@ contract HealthDRS is Ownable {
        latestContract = _contract;
    }
 
+   function setMinimumHold(uint _minimumHold) public onlyOwner {
+       minimumHold = _minimumHold;
+   }
+
   /**
   * Create Services & Keys
   * Keys can also be issued to accounts
   */
-   function createService(string url) public {
+   function createService(string url) 
+       public 
+       holdingTokens() 
+   {
        bytes32 id = keccak256(msg.sender, url);
        require(services[id].owner == address(0)); //prevent overwriting
        services[id].owner = msg.sender;
@@ -207,13 +221,15 @@ contract HealthDRS is Ownable {
    function createKey(bytes32 service)
        public
        ownsService(service)       
+       holdingTokens()       
    {
        issueKey(service, msg.sender);
    }
   
    function issueKey(bytes32 service, address issueTo)
        public
-       ownsService(service) 
+       ownsService(service)
+       holdingTokens()        
    {
        bytes32 id = keccak256(service, now, issueTo);
        require(keys[id].owner == address(0));
