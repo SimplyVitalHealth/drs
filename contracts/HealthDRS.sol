@@ -249,6 +249,7 @@ contract HealthDRS is Ownable {
        public
        ownsKey(key)
        canShare(key)
+       holdingTokens()       
    {
        if (isKeyOwner(key, account) == false) {
            owners[key].push(account);
@@ -267,6 +268,7 @@ contract HealthDRS is Ownable {
    function unshareKey(bytes32 key, address account)
        public
        ownsKey(key)
+       holdingTokens()       
    {
        for (uint i = 0; i < owners[key].length; i++) {
            if (owners[key][i] == account) {
