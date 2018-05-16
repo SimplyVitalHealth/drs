@@ -24,6 +24,20 @@ contract('HealthDRS', function(accounts) {
     owner.should.equal(true);    
   })
  
+  it('non holder should not be able to create a service', async function() {
+    let tx = await this.drs.createService(this.url,{from: accounts[1]})
+    tx.logs.length.should.equal(0);    
+  })
+
+  it('non holder should be able to create a service after procuring health cash', async function() {
+    let min = await this.drs.minimumHold()
+    await this.token.transfer(accounts[1],min.toNumber())
+    let tx = await this.drs.createService(this.url,{from: accounts[1]})
+    let service = tx.logs[0].args._service
+    let owner = await this.drs.isServiceOwner(service, accounts[1])
+    owner.should.equal(true);    
+  })
+
   it('should return the correct URL when passed a service key', async function() {
     let tx = await this.drs.createService(this.url)
     let service = tx.logs[0].args._service
@@ -81,6 +95,5 @@ contract('HealthDRS', function(accounts) {
     let url = await this.drs.getUrlFromKey(key2) 
     url.should.equal('changedUrl')    
   })
-
 
 })

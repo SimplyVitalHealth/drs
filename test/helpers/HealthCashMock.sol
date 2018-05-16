@@ -7,7 +7,7 @@ contract HealthCashMock is StandardToken {
   string public name = "Health Cash";
   string public symbol = "HLTH";
   uint256 public decimals = 18;
-  uint256 public INITIAL_SUPPLY = 100;
+  uint256 public INITIAL_SUPPLY = 100000000;
 
   function HealthCashMock() {
     totalSupply = INITIAL_SUPPLY;
