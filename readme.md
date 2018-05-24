@@ -103,6 +103,7 @@ improvements.​ ​ We​ ​ wish​ ​ the​ ​ SVH​ ​ team​ ​ wel
 Yo Sub Kwon, Founder Hosho Group
 
 Read the [complete audit report](https://github.com/Health-Nexus/drs/blob/master/SimplyVitalHealthContractAudit.pdf). 
+Read the [updated audit report](https://github.com/Health-Nexus/drs/blob/master/SimplyVitalHealthContractAuditUpdatedVersion.pdf). 
 
 
 ## Credits
