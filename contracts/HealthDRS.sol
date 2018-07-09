@@ -17,7 +17,7 @@ contract HealthDRS is Ownable {
    StandardToken public token;
    address public latestContract = address(this);
    uint8 public version = 1;
-   uint public minimumHold = 1000;   
+   uint public minimumHold = 1000;
 
    struct Service {
        string url;
@@ -38,24 +38,48 @@ contract HealthDRS is Ownable {
        bool canSell;
    }
 
+//market
+   struct buyingData {
+       uint tag1;
+       uint tag2;
+       uint contact;
+   }
+
+//market
+
+   struct sellingData {
+       uint tag1;
+       uint tag2;
+       uint contact;
+   }
+
+
    mapping (bytes32 => Service) public services;
    bytes32[] public serviceList;
 
    mapping(bytes32 => Key) keys;
    bytes32[] public keyList;
 
+
+   bytes32[] public keyList;
+
    mapping(bytes32 => address[]) public owners;
-   mapping(bytes32 => bytes32) public keyData;       
+   mapping(bytes32 => bytes32) public keyData;
    mapping(bytes32 => SalesOffer) public salesOffers;
-   mapping(bytes32 => bytes32) public tradeOffers;   
+
+   //market
+   mapping(bytes32 => buyingData[]) public sellingDatas;
+   mapping(bytes32 => sellingData[]) public buyingDatas;
+
+   mapping(bytes32 => bytes32) public tradeOffers;
 
    event ServiceCreated(address indexed _owner, bytes32 indexed _service);
    event KeyCreated(address indexed _owner, bytes32 indexed _key);
    event KeySold(bytes32 _key, address indexed _seller, address indexed _buyer, uint _price);
    event KeysTraded(bytes32 indexed _key1, bytes32 indexed _key2);
    event Access(address indexed _owner, bytes32 indexed _from, bytes32 indexed _to, uint _time, string _data);
-   event Message(address indexed _owner, bytes32 indexed _from, bytes32 indexed _to, uint _time, string _category, string _data);   
-   event Log(address indexed _owner, bytes32 indexed _from, uint _time, string _data);       
+   event Message(address indexed _owner, bytes32 indexed _from, bytes32 indexed _to, uint _time, string _category, string _data);
+   event Log(address indexed _owner, bytes32 indexed _from, uint _time, string _data);
 
    modifier validKey(bytes32 key) {
      require(keys[key].owner != address(0));
@@ -78,13 +102,13 @@ contract HealthDRS is Ownable {
 
    modifier canSell(bytes32 key) {
      require(keys[key].canSell);
-     require(owners[key].length == 0);     
+     require(owners[key].length == 0);
      _;
    }
 
    modifier canTrade(bytes32 key) {
      require(keys[key].canTrade);
-     require(owners[key].length == 0);          
+     require(owners[key].length == 0);
      _;
    }
 
@@ -101,8 +125,8 @@ contract HealthDRS is Ownable {
 
    //prevent accidentally​ sending/trapping ether
    function() {
-       revert(); 
-   } 
+       revert();
+   }
 
   //require token specified at deployment
   function HealthDRS(StandardToken _token) {
@@ -173,9 +197,9 @@ contract HealthDRS is Ownable {
    }
 
    function getOwnersLength(bytes32 key)
-       public 
+       public
        constant
-       returns (uint256) 
+       returns (uint256)
     {
         return owners[key].length;
     }
@@ -189,7 +213,7 @@ contract HealthDRS is Ownable {
    function recoverTokens(StandardToken _token, uint amount) public onlyOwner {
        _token.transfer(owner, amount);
    }
- 
+
    function setHealthCashToken(StandardToken _token) public onlyOwner {
        token = _token;
    }
@@ -206,9 +230,9 @@ contract HealthDRS is Ownable {
   * Create Services & Keys
   * Keys can also be issued to accounts
   */
-   function createService(string url) 
-       public 
-       holdingTokens() 
+   function createService(string url)
+       public
+       holdingTokens()
    {
        bytes32 id = keccak256(msg.sender, url);
        require(services[id].owner == address(0)); //prevent overwriting
@@ -220,24 +244,24 @@ contract HealthDRS is Ownable {
 
    function createKey(bytes32 service)
        public
-       ownsService(service)       
-       holdingTokens()       
+       ownsService(service)
+       holdingTokens()
    {
        issueKey(service, msg.sender);
    }
-  
+
    function issueKey(bytes32 service, address issueTo)
        public
        ownsService(service)
-       holdingTokens()        
+       holdingTokens()
    {
        bytes32 id = keccak256(service, now, issueTo);
        require(keys[id].owner == address(0));
-       keys[id].owner = issueTo;      
+       keys[id].owner = issueTo;
        keys[id].service = service;
-       keyList.push(id);       
-       KeyCreated(issueTo, id);       
-   }       
+       keyList.push(id);
+       KeyCreated(issueTo, id);
+   }
 
   /**
   * Share Services and Keys
@@ -249,7 +273,7 @@ contract HealthDRS is Ownable {
        public
        ownsKey(key)
        canShare(key)
-       holdingTokens()       
+       holdingTokens()
    {
        if (isKeyOwner(key, account) == false) {
            owners[key].push(account);
@@ -268,7 +292,7 @@ contract HealthDRS is Ownable {
    function unshareKey(bytes32 key, address account)
        public
        ownsKey(key)
-       holdingTokens()       
+       holdingTokens()
    {
        for (uint i = 0; i < owners[key].length; i++) {
            if (owners[key][i] == account) {
@@ -311,7 +335,7 @@ contract HealthDRS is Ownable {
        cancelTradeOffer(key);
        salesOffers[key].buyer = buyer;
        salesOffers[key].price = price;
-       salesOffers[key].canSell = _canSell;       
+       salesOffers[key].canSell = _canSell;
    }
 
    function cancelSalesOffer(bytes32 key)
@@ -325,7 +349,7 @@ contract HealthDRS is Ownable {
 
    function purchaseKey(bytes32 key)
        public
-       canSell(key)               
+       canSell(key)
    {
 
       //require explicit authority to spend tokens on the purchasers behalf
@@ -337,7 +361,7 @@ contract HealthDRS is Ownable {
       * to the primary owner of the key.
       */
       assert(token.transferFrom(msg.sender, keys[key].owner, salesOffers[key].price));
-     
+
       KeySold(key, keys[key].owner, msg.sender, salesOffers[key].price);
       keys[key].owner = msg.sender;
 
@@ -353,12 +377,12 @@ contract HealthDRS is Ownable {
    * both keys have to be authorized
    * to trade by their respective services.
    */
-    function createTradeOffer(bytes32 have, bytes32 want) 
+    function createTradeOffer(bytes32 have, bytes32 want)
         public
         ownsKey(have)
-        validKey(want)        
-        canTrade(have)       
-        canTrade(want)               
+        validKey(want)
+        canTrade(have)
+        canTrade(want)
     {
         //cancel sales offer & create a trade offer
         cancelSalesOffer(have);
@@ -375,12 +399,12 @@ contract HealthDRS is Ownable {
     function tradeKey(bytes32 have, bytes32 want)
         public
         ownsKey(have)
-        validKey(want)           
-        canTrade(have)       
-        canTrade(want)       
+        validKey(want)
+        canTrade(have)
+        canTrade(want)
     {
         require(tradeOffers[want] == have);
-         
+
         KeysTraded(want, have);
         //complete the trade
         keys[have].owner = keys[want].owner;
@@ -410,7 +434,7 @@ contract HealthDRS is Ownable {
        bool canSell_)
        public
        validKey(key)
-       ownsService(keys[key].service)          
+       ownsService(keys[key].service)
    {
        keys[key].canShare = canShare_;
        if (canShare_ == false) {
@@ -423,11 +447,11 @@ contract HealthDRS is Ownable {
        }
 
        keys[key].canSell = canSell_;
-       if (canSell_ == false) {               
+       if (canSell_ == false) {
            salesOffers[key].buyer = address(0);
            salesOffers[key].price = 0;
-           salesOffers[key].canSell = false;           
-       }           
+           salesOffers[key].canSell = false;
+       }
 
    }
 
@@ -468,11 +492,11 @@ contract HealthDRS is Ownable {
    function setKeyData(bytes32 key, bytes32 dataKey, bytes32 dataValue)
        public
        validKey(key)
-       ownsService(keys[key].service)       
+       ownsService(keys[key].service)
    {
        keyData[keccak256(key,dataKey)] = dataValue;
    }
-  
+
    function getKeyData(bytes32 key, bytes32 dataKey)
        public
        constant
@@ -481,6 +505,69 @@ contract HealthDRS is Ownable {
    {
        return keyData[keccak256(key,dataKey)];
    }
+
+
+   /**
+   * Market Search
+   */
+   /*mapping(bytes32 => bytes32[]) public sellingDatas;
+   mapping(bytes32 => bytes32[]) public buyingDatas;*/
+
+   function getPotentialSellers(bytes32 tag1, bytes32 tag2)
+       public
+       constant
+       returns (bytes32[])
+   {
+     bytes32[] toReturnArray;
+     for (uint i = 0; i < sellingDatas.length; i++) {
+       bytes32 toReturn=sellingDatas[i].contact
+       if((tag1!=null && (tag1==sellingDatas[i].tag1 || tag1==sellingDatas[i].tag2)) || (tag2!=null && (tag2==sellingDatas[i].tag1 || tag2==sellingDatas[i].tag2)))
+        toReturnArray.push(toReturn)
+       return toReturnArray;
+     }
+   }
+
+
+   function setPotentialSellers(bytes32 tag1, bytes32 tag2, bytes32 contact)
+       public
+       constant
+   {
+     buyingData toSet;
+     toSet.tag1=tag1;
+     toSet.tag2=tag2;
+     toSet.contact=contact;
+     buyinggDatas.push(toSet)
+
+   }
+
+
+   function setPotentialBuyers(bytes32 tag1, bytes32 tag2, bytes32 contact)
+       public
+       constant
+
+   {
+     sellingDatas toSet;
+     toSet.tag1=tag1;
+     toSet.tag2=tag2;
+     toSet.contact=contact;
+     sellingDatas.push(toSet)
+   }
+
+
+   function getPotentialBuyters(bytes32 tag1, bytes32 tag2)
+       public
+       constant
+       returns (bytes32[])
+   {
+     bytes32[] toReturnArray;
+     for (uint i = 0; i < buyingDatas.length; i++) {
+       bytes32 toReturn=sellingDatas[i].contact
+       if((tag1!=null && (tag1==buyingDatas[i].tag1 || tag1==buyingDatas[i].tag2)) || (tag2!=null && (tag2==buyingDatas[i].tag1 || tag2==buyingDatas[i].tag2)))
+        toReturnArray.push(toReturn)
+       return toReturnArray;
+     }
+   }
+
 
    /**
    * ecrecover passthrough
@@ -524,7 +611,7 @@ contract HealthDRS is Ownable {
    function log(bytes32 from, string data)
        public
    {
-       require((keys[from].owner != address(0) && isKeyOwner(from, msg.sender)) || 
+       require((keys[from].owner != address(0) && isKeyOwner(from, msg.sender)) ||
                isServiceOwner(from, msg.sender));
 
        Log(msg.sender, from, now, data);
