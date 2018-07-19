@@ -1,7 +1,7 @@
 pragma solidity ^0.4.15;
 
 import 'zeppelin-solidity/contracts/ownership/Ownable.sol';
-import 'zeppelin-solidity/contracts/token/StandardToken.sol';
+import 'zeppelin-solidity/contracts/token/ERC20/StandardToken.sol';
 
 /**
 * Health Decentralized Record Service (DRS)
@@ -18,6 +18,7 @@ contract HealthDRS is Ownable {
    address public latestContract = address(this);
    uint8 public version = 1;
    uint public minimumHold = 1000;
+   uint public maxSearches = 8;
 
    struct Service {
        string url;
@@ -59,23 +60,22 @@ contract HealthDRS is Ownable {
 
    mapping (bytes32 => Service) public services;
    bytes32[] public serviceList;
-   bytes32[] public sellingDatasList;
-   bytes32[] public buyingDatasList;
+   bytes32[] public sellerInformationList;
+   bytes32[] public buyingInformationList;
 
    mapping(bytes32 => Key) keys;
    bytes32[] public keyList;
 
 
-   bytes32[] public keyList;
 
    mapping(bytes32 => address[]) public owners;
    mapping(bytes32 => bytes32) public keyData;
    mapping(bytes32 => SalesOffer) public salesOffers;
 
    //market
-   mapping(bytes32 => buyingData[]) public sellingDatas;
-   mapping(bytes32 => sellingData[]) public buyingDatas;
-   mapping(bytes32 => uint[]) public numbeOfSearches;
+   mapping(bytes32 => buyingData) public sellerInformation;
+   mapping(bytes32 => sellingData) public buyingInformation;
+   mapping(address => uint) public numbeOfSearches;
 
    mapping(bytes32 => bytes32) public tradeOffers;
 
@@ -131,6 +131,8 @@ contract HealthDRS is Ownable {
 
    modifier holdingTokensSameAsNumberOfSearches() {
      require(token.balanceOf(msg.sender) >= numbeOfSearches[msg.sender]);
+     require(numbeOfSearches[msg.sender] >= maxSearches);
+
      _;
    }
 
@@ -141,7 +143,7 @@ contract HealthDRS is Ownable {
    }
 
   //require token specified at deployment
-  function HealthDRS(StandardToken _token) {
+   constructor(StandardToken _token) {
       token = _token;
   }
 
@@ -246,12 +248,12 @@ contract HealthDRS is Ownable {
        public
        holdingTokens()
    {
-       bytes32 id = keccak256(msg.sender, url);
+       bytes32 id = keccak256(abi.encodePacked(msg.sender, url));
        require(services[id].owner == address(0)); //prevent overwriting
        services[id].owner = msg.sender;
        services[id].url = url;
        serviceList.push(id);
-       ServiceCreated(msg.sender, id);
+       emit ServiceCreated(msg.sender, id);
    }
 
    function createKey(bytes32 service)
@@ -267,12 +269,12 @@ contract HealthDRS is Ownable {
        ownsService(service)
        holdingTokens()
    {
-       bytes32 id = keccak256(service, now, issueTo);
+       bytes32 id = keccak256(abi.encodePacked(service, now, issueTo));
        require(keys[id].owner == address(0));
        keys[id].owner = issueTo;
        keys[id].service = service;
        keyList.push(id);
-       KeyCreated(issueTo, id);
+       emit KeyCreated(issueTo, id);
    }
 
   /**
@@ -374,7 +376,7 @@ contract HealthDRS is Ownable {
       */
       assert(token.transferFrom(msg.sender, keys[key].owner, salesOffers[key].price));
 
-      KeySold(key, keys[key].owner, msg.sender, salesOffers[key].price);
+      emit KeySold(key, keys[key].owner, msg.sender, salesOffers[key].price);
       keys[key].owner = msg.sender;
 
       //set canSell - allows for non-resellable keys
@@ -417,7 +419,7 @@ contract HealthDRS is Ownable {
     {
         require(tradeOffers[want] == have);
 
-        KeysTraded(want, have);
+        emit KeysTraded(want, have);
         //complete the trade
         keys[have].owner = keys[want].owner;
         keys[want].owner = msg.sender;
@@ -506,7 +508,7 @@ contract HealthDRS is Ownable {
        validKey(key)
        ownsService(keys[key].service)
    {
-       keyData[keccak256(key,dataKey)] = dataValue;
+       keyData[keccak256(abi.encodePacked(key,dataKey))] = dataValue;
    }
 
    function getKeyData(bytes32 key, bytes32 dataKey)
@@ -515,29 +517,40 @@ contract HealthDRS is Ownable {
        validKey(key)
        returns (bytes32)
    {
-       return keyData[keccak256(key,dataKey)];
+       return keyData[keccak256(abi.encodePacked(key,dataKey))];
    }
 
 
    /**
    * Market Search
    */
-   /*mapping(bytes32 => bytes32[]) public sellingDatas;
-   mapping(bytes32 => bytes32[]) public buyingDatas;*/
+   /*mapping(bytes32 => bytes32[]) public sellerInformation;
+   mapping(bytes32 => bytes32[]) public buyingInformation;*/
 
    function getPotentialSellers(bytes32 tag1, bytes32 tag2)
        public
        constant
        returns (bytes32[])
    {
-     bytes32[] toReturnArray;
-     for (uint i = 0; i < sellingDatas.length; i++) {
-       bytes32 toReturn=sellingDatas[i].contact;
-       if((tag1!=null && (tag1==sellingDatas[i].tag1 || tag1==sellingDatas[i].tag2)) || (tag2!=null && (tag2==sellingDatas[i].tag1 || tag2==sellingDatas[i].tag2)))
-
-        toReturnArray.push(toReturn)
-       return toReturnArray;
+     uint length=0;
+     for (uint i = 0; i < sellerInformation.length; i++) {
+       bytes32 toReturn=sellerInformation[i].contact;
+       if((tag1 != 0 && (tag1==sellerInformation[i].tag1 || tag1==sellerInformation[i].tag2)) || (tag2!=0 && (tag2==sellerInformation[i].tag1 || tag2==sellerInformation[i].tag2)))
+       {
+         length++;
+        }
      }
+     bytes32[] storage toReturnArray=new bytes32[](length);
+
+     for ( i = 0; i < sellerInformation.length; i++) {
+        toReturn=sellerInformation[i].contact;
+       if((tag1 != 0 && (tag1==sellerInformation[i].tag1 || tag1==sellerInformation[i].tag2)) || (tag2!=0 && (tag2==sellerInformation[i].tag1 || tag2==sellerInformation[i].tag2)))
+       {
+         toReturnArray.push(toReturn);
+        }
+     }
+     return toReturnArray;
+
    }
 
 
@@ -545,9 +558,9 @@ contract HealthDRS is Ownable {
        public
        constant
    {
-     bytes32 id = keccak256(msg.sender, contact, tag1, tag2);
-     require(buyinggDatas[id].owner == msg.sender); //Ensures existence
-     delete buyinggDatas[id];
+     bytes32 id = keccak256(abi.encodePacked(msg.sender, contact, tag1, tag2));
+     require(sellingData[id].owner == msg.sender); //Ensures existence
+     delete sellingData[id];
      numbeOfSearches[msg.sender]--;
 
    }
@@ -557,9 +570,9 @@ contract HealthDRS is Ownable {
        constant
 
    {
-     bytes32 id = keccak256(msg.sender, contact, tag1, tag2);
-     require(sellingData[id].owner == msg.sender); //Ensures existence
-     delete sellingData[id];
+     bytes32 id = keccak256(abi.encodePacked(msg.sender, contact, tag1, tag2));
+     require(buyingInformation[id].owner == msg.sender); //Ensures existence
+     delete buyingInformation[id];
      numbeOfSearches[msg.sender]--;
    }
 
@@ -572,16 +585,13 @@ contract HealthDRS is Ownable {
 
    {
 
-     bytes32 id = keccak256(msg.sender, contact, tag1, tag2);
-     require(buyinggDatas[id].owner == address(0)); //prevent overwriting
-     buyinggDatas[id].tag1=tag1;
-     buyinggDatas[id].owner = msg.sender;
-     buyinggDatas[id].tag2=tag2;
-     buyinggDatas[id].contact=contact;
-     if(!numbeOfSearches[msg.sender])
-       numbeOfSearches[msg.sender]=1
-     else
-       numbeOfSearches[msg.sender]++;
+     bytes32 id = keccak256(abi.encodePacked(msg.sender, contact, tag1, tag2));
+     require(sellerInformation[id].owner == address(0)); //prevent overwriting
+     sellerInformation[id].tag1=tag1;
+     sellerInformation[id].owner = msg.sender;
+     sellerInformation[id].tag2=tag2;
+     sellerInformation[id].contact=contact;
+     numbeOfSearches[msg.sender]++;
 
    }
 
@@ -592,16 +602,13 @@ contract HealthDRS is Ownable {
 
 
    {
-     bytes32 id = keccak256(msg.sender, contact, tag1, tag2);
-     require(sellingData[id].owner == address(0)); //prevent overwriting
-     sellingData[id].tag1=tag1;
-     sellingData[id].owner = msg.sender;
-     sellingData[id].tag2=tag2;
-     sellingData[id].contact=contact;
-     if(!numbeOfSearches[msg.sender])
-       numbeOfSearches[msg.sender]=1
-     else
-       numbeOfSearches[msg.sender]++;
+     bytes32 id = keccak256(abi.encodePacked(msg.sender, contact, tag1, tag2));
+     require(buyingInformation[id].owner == address(0)); //prevent overwriting
+     buyingInformation[id].tag1=tag1;
+     buyingInformation[id].owner = msg.sender;
+     buyingInformation[id].tag2=tag2;
+     buyingInformation[id].contact=contact;
+     numbeOfSearches[msg.sender]++;
 
    }
 
@@ -611,13 +618,21 @@ contract HealthDRS is Ownable {
        constant
        returns (bytes32[])
    {
-     bytes32[] toReturnArray;
-     for (uint i = 0; i < buyingDatas.length; i++) {
-       bytes32 toReturn=sellingDatas[i].contact;
-       if((tag1!=null && (tag1==buyingDatas[i].tag1 || tag1==buyingDatas[i].tag2)) || (tag2!=null && (tag2==buyingDatas[i].tag1 || tag2==buyingDatas[i].tag2)))
-        toReturnArray.push(toReturn)
-       return toReturnArray;
+     uint length=0;
+     for (uint i = 0; i < buyingInformation.length; i++) {
+       bytes32 toReturn=buyingInformation[i].contact;
+       if((tag1!=0 && (tag1==buyingInformation[i].tag1 || tag1==buyingInformation[i].tag2)) || (tag2!=0 && (tag2==buyingInformation[i].tag1 || tag2==buyingInformation[i].tag2)))
+        length++;
      }
+     bytes32[] storage toReturnArray=new bytes32[](length);
+
+     for ( i = 0; i < buyingInformation.length; i++) {
+        toReturn=buyingInformation[i].contact;
+       if((tag1!=0 && (tag1==buyingInformation[i].tag1 || tag1==buyingInformation[i].tag2)) || (tag2!=0 && (tag2==buyingInformation[i].tag1 || tag2==buyingInformation[i].tag2)))
+        toReturnArray.push(toReturn);
+     }
+     return toReturnArray;
+
    }
 
 
