@@ -43,6 +43,7 @@ contract HealthDRS is Ownable {
        uint tag1;
        uint tag2;
        uint contact;
+       address owner;
    }
 
 //market
@@ -51,11 +52,15 @@ contract HealthDRS is Ownable {
        uint tag1;
        uint tag2;
        uint contact;
+       address owner;
+
    }
 
 
    mapping (bytes32 => Service) public services;
    bytes32[] public serviceList;
+   bytes32[] public sellingDatasList;
+   bytes32[] public buyingDatasList;
 
    mapping(bytes32 => Key) keys;
    bytes32[] public keyList;
@@ -70,6 +75,7 @@ contract HealthDRS is Ownable {
    //market
    mapping(bytes32 => buyingData[]) public sellingDatas;
    mapping(bytes32 => sellingData[]) public buyingDatas;
+   mapping(bytes32 => uint[]) public numbeOfSearches;
 
    mapping(bytes32 => bytes32) public tradeOffers;
 
@@ -122,6 +128,12 @@ contract HealthDRS is Ownable {
      require(token.balanceOf(msg.sender) >= minimumHold);
      _;
    }
+
+   modifier holdingTokensSameAsNumberOfSearches() {
+     require(token.balanceOf(msg.sender) >= numbeOfSearches[msg.sender]);
+     _;
+   }
+
 
    //prevent accidentally​ sending/trapping ether
    function() {
@@ -520,37 +532,77 @@ contract HealthDRS is Ownable {
    {
      bytes32[] toReturnArray;
      for (uint i = 0; i < sellingDatas.length; i++) {
-       bytes32 toReturn=sellingDatas[i].contact
+       bytes32 toReturn=sellingDatas[i].contact;
        if((tag1!=null && (tag1==sellingDatas[i].tag1 || tag1==sellingDatas[i].tag2)) || (tag2!=null && (tag2==sellingDatas[i].tag1 || tag2==sellingDatas[i].tag2)))
+
         toReturnArray.push(toReturn)
        return toReturnArray;
      }
    }
 
 
-   function setPotentialSellers(bytes32 tag1, bytes32 tag2, bytes32 contact)
+   function deletePotentialSellers(bytes32 tag1, bytes32 tag2, bytes32 contact)
        public
        constant
    {
-     buyingData toSet;
-     toSet.tag1=tag1;
-     toSet.tag2=tag2;
-     toSet.contact=contact;
-     buyinggDatas.push(toSet)
+     bytes32 id = keccak256(msg.sender, contact, tag1, tag2);
+     require(buyinggDatas[id].owner == msg.sender); //Ensures existence
+     delete buyinggDatas[id];
+     numbeOfSearches[msg.sender]--;
 
    }
 
+   function deletePotentialBuyers(bytes32 tag1, bytes32 tag2, bytes32 contact)
+       public
+       constant
+
+   {
+     bytes32 id = keccak256(msg.sender, contact, tag1, tag2);
+     require(sellingData[id].owner == msg.sender); //Ensures existence
+     delete sellingData[id];
+     numbeOfSearches[msg.sender]--;
+   }
+
+
+
+   function setPotentialSellers(bytes32 tag1, bytes32 tag2, bytes32 contact)
+       public
+       constant
+       holdingTokensSameAsNumberOfSearches()
+
+   {
+
+     bytes32 id = keccak256(msg.sender, contact, tag1, tag2);
+     require(buyinggDatas[id].owner == address(0)); //prevent overwriting
+     buyinggDatas[id].tag1=tag1;
+     buyinggDatas[id].owner = msg.sender;
+     buyinggDatas[id].tag2=tag2;
+     buyinggDatas[id].contact=contact;
+     if(!numbeOfSearches[msg.sender])
+       numbeOfSearches[msg.sender]=1
+     else
+       numbeOfSearches[msg.sender]++;
+
+   }
 
    function setPotentialBuyers(bytes32 tag1, bytes32 tag2, bytes32 contact)
        public
        constant
+       holdingTokensSameAsNumberOfSearches()
+
 
    {
-     sellingDatas toSet;
-     toSet.tag1=tag1;
-     toSet.tag2=tag2;
-     toSet.contact=contact;
-     sellingDatas.push(toSet)
+     bytes32 id = keccak256(msg.sender, contact, tag1, tag2);
+     require(sellingData[id].owner == address(0)); //prevent overwriting
+     sellingData[id].tag1=tag1;
+     sellingData[id].owner = msg.sender;
+     sellingData[id].tag2=tag2;
+     sellingData[id].contact=contact;
+     if(!numbeOfSearches[msg.sender])
+       numbeOfSearches[msg.sender]=1
+     else
+       numbeOfSearches[msg.sender]++;
+
    }
 
 
@@ -561,7 +613,7 @@ contract HealthDRS is Ownable {
    {
      bytes32[] toReturnArray;
      for (uint i = 0; i < buyingDatas.length; i++) {
-       bytes32 toReturn=sellingDatas[i].contact
+       bytes32 toReturn=sellingDatas[i].contact;
        if((tag1!=null && (tag1==buyingDatas[i].tag1 || tag1==buyingDatas[i].tag2)) || (tag2!=null && (tag2==buyingDatas[i].tag1 || tag2==buyingDatas[i].tag2)))
         toReturnArray.push(toReturn)
        return toReturnArray;
