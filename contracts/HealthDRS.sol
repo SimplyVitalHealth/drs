@@ -73,8 +73,8 @@ contract HealthDRS is Ownable {
    mapping(bytes32 => SalesOffer) public salesOffers;
 
    //market
-   mapping(bytes32 => buyingData) public sellerInformation;
-   mapping(bytes32 => sellingData) public buyingInformation;
+   mapping(bytes32 => buyingData[]) public sellerInformation;
+   mapping(bytes32 => sellingData[]) public buyingInformation;
    mapping(address => uint) public numbeOfSearches;
 
    mapping(bytes32 => bytes32) public tradeOffers;
@@ -533,23 +533,17 @@ contract HealthDRS is Ownable {
        returns (bytes32[])
    {
      uint length=0;
-     for (uint i = 0; i < sellerInformation.length; i++) {
-       bytes32 toReturn=sellerInformation[i].contact;
-       if((tag1 != 0 && (tag1==sellerInformation[i].tag1 || tag1==sellerInformation[i].tag2)) || (tag2!=0 && (tag2==sellerInformation[i].tag1 || tag2==sellerInformation[i].tag2)))
-       {
-         length++;
-        }
-     }
-     bytes32[] storage toReturnArray=new bytes32[](length);
+     bytes32 id = keccak256(abi.encodePacked(tag1, tag2));
+     /*bytes32[] storage toReturnArray=new bytes32[](length);*/
 
-     for ( i = 0; i < sellerInformation.length; i++) {
+     /*for ( i = 0; i < sellerInformation.length; i++) {
         toReturn=sellerInformation[i].contact;
        if((tag1 != 0 && (tag1==sellerInformation[i].tag1 || tag1==sellerInformation[i].tag2)) || (tag2!=0 && (tag2==sellerInformation[i].tag1 || tag2==sellerInformation[i].tag2)))
        {
          toReturnArray.push(toReturn);
         }
-     }
-     return toReturnArray;
+     }*/
+     return sellerInformation[id];
 
    }
 
@@ -558,11 +552,14 @@ contract HealthDRS is Ownable {
        public
        constant
    {
-     bytes32 id = keccak256(abi.encodePacked(msg.sender, contact, tag1, tag2));
-     require(sellingData[id].owner == msg.sender); //Ensures existence
-     delete sellingData[id];
-     numbeOfSearches[msg.sender]--;
-
+     bytes32 id = keccak256(abi.encodePacked(tag1, tag2));
+     /*require(sellingData[id].owner == msg.sender); //Ensures existence*/
+     for(uint i=0;i<sellingData[id].length;i++){
+       if( sellingData[id][i].owner==msg.sender){
+         delete sellingData[id][i];
+         numbeOfSearches[msg.sender]--;
+       }
+     }
    }
 
    function deletePotentialBuyers(bytes32 tag1, bytes32 tag2, bytes32 contact)
@@ -570,10 +567,15 @@ contract HealthDRS is Ownable {
        constant
 
    {
-     bytes32 id = keccak256(abi.encodePacked(msg.sender, contact, tag1, tag2));
-     require(buyingInformation[id].owner == msg.sender); //Ensures existence
-     delete buyingInformation[id];
-     numbeOfSearches[msg.sender]--;
+     bytes32 id = keccak256(abi.encodePacked(tag1, tag2));
+     for(uint i=0;i<buyingInformation[id].length;i++)
+     {
+       if( buyingInformation[id][i].owner==msg.sender){
+         delete buyingInformation[id][i];
+         numbeOfSearches[msg.sender]--;
+       }
+     }
+
    }
 
 
@@ -585,12 +587,14 @@ contract HealthDRS is Ownable {
 
    {
 
-     bytes32 id = keccak256(abi.encodePacked(msg.sender, contact, tag1, tag2));
+     bytes32 id = keccak256(abi.encodePacked(tag1, tag2));
      require(sellerInformation[id].owner == address(0)); //prevent overwriting
-     sellerInformation[id].tag1=tag1;
-     sellerInformation[id].owner = msg.sender;
-     sellerInformation[id].tag2=tag2;
-     sellerInformation[id].contact=contact;
+     sellingData newData;
+     newData.tag1=tag1;
+     newData.owner = msg.sender;
+     newData.tag2=tag2;
+     newData.contact=contact;
+     sellerInformation[id].push(newData);
      numbeOfSearches[msg.sender]++;
 
    }
@@ -602,12 +606,15 @@ contract HealthDRS is Ownable {
 
 
    {
-     bytes32 id = keccak256(abi.encodePacked(msg.sender, contact, tag1, tag2));
+     bytes32 id = keccak256(abi.encodePacked( tag1, tag2));
      require(buyingInformation[id].owner == address(0)); //prevent overwriting
-     buyingInformation[id].tag1=tag1;
-     buyingInformation[id].owner = msg.sender;
-     buyingInformation[id].tag2=tag2;
-     buyingInformation[id].contact=contact;
+     buyingData newData;
+
+      newData.tag1=tag1;
+     newData.owner = msg.sender;
+     newData.tag2=tag2;
+     newData.contact=contact;
+     buyingInformation[id].push(newData);
      numbeOfSearches[msg.sender]++;
 
    }
@@ -618,7 +625,9 @@ contract HealthDRS is Ownable {
        constant
        returns (bytes32[])
    {
-     uint length=0;
+     bytes32 id = keccak256(abi.encodePacked(tag1, tag2));
+
+     /*uint length=0;
      for (uint i = 0; i < buyingInformation.length; i++) {
        bytes32 toReturn=buyingInformation[i].contact;
        if((tag1!=0 && (tag1==buyingInformation[i].tag1 || tag1==buyingInformation[i].tag2)) || (tag2!=0 && (tag2==buyingInformation[i].tag1 || tag2==buyingInformation[i].tag2)))
@@ -630,8 +639,8 @@ contract HealthDRS is Ownable {
         toReturn=buyingInformation[i].contact;
        if((tag1!=0 && (tag1==buyingInformation[i].tag1 || tag1==buyingInformation[i].tag2)) || (tag2!=0 && (tag2==buyingInformation[i].tag1 || tag2==buyingInformation[i].tag2)))
         toReturnArray.push(toReturn);
-     }
-     return toReturnArray;
+     }*/
+     return  buyingInformation[id];
 
    }
 
