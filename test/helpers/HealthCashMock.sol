@@ -1,6 +1,6 @@
 pragma solidity ^0.4.11;
 
-import 'zeppelin-solidity/contracts/token/StandardToken.sol';
+import 'zeppelin-solidity/contracts/token/ERC20/StandardToken.sol';
 
 contract HealthCashMock is StandardToken {
 
@@ -9,8 +9,8 @@ contract HealthCashMock is StandardToken {
   uint256 public decimals = 18;
   uint256 public INITIAL_SUPPLY = 100000000;
 
-  function HealthCashMock() {
-    totalSupply = INITIAL_SUPPLY;
+   constructor() {
+    totalSupply_ = INITIAL_SUPPLY;
     balances[msg.sender] = INITIAL_SUPPLY;
   }
 

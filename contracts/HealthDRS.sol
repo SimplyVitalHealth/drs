@@ -142,7 +142,7 @@ contract HealthDRS is Ownable {
    }
 
   //require token specified at deployment
-   constructor(StandardToken _token) {
+   constructor(StandardToken _token) public{
       token = _token;
   }
 
@@ -585,7 +585,7 @@ contract HealthDRS is Ownable {
 
      bytes32 id = keccak256(abi.encodePacked(tag1, tag2));
      /*require(sellerInformation[id].owner == address(0)); //prevent overwriting*/
-     sellingData storage newData;
+     sellingData memory newData;
      newData.tag1=tag1;
      newData.owner = msg.sender;
      newData.tag2=tag2;
@@ -604,9 +604,9 @@ contract HealthDRS is Ownable {
    {
      bytes32 id = keccak256(abi.encodePacked( tag1, tag2));
      /*require(buyingInformation[id].owner == address(0)); //prevent overwriting*/
-     buyingData storage newData;
+     buyingData memory newData;
 
-      newData.tag1=tag1;
+    newData.tag1=tag1;
      newData.owner = msg.sender;
      newData.tag2=tag2;
      newData.contact=contact;
