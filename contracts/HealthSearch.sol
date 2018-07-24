@@ -19,6 +19,10 @@ contract HealthSearch is Ownable {
    uint8 public version = 1;
    uint public minimumHold = 1000;
    uint public maxSearches = 8;
+   uint public maxSearchesPerTag = 8;
+
+   uint public PricePerTag = 1;
+
 
    struct Service {
        string url;
@@ -37,19 +41,24 @@ contract HealthSearch is Ownable {
 
 //market
    struct buyingData {
+       bytes32 keyId;
        bytes32 tag1;
        bytes32 tag2;
        bytes32 contact;
        address owner;
+       uint256 timeStamp;
+
    }
 
 //market
 
    struct sellingData {
+       bytes32 keyId;
        bytes32 tag1;
        bytes32 tag2;
        bytes32 contact;
        address owner;
+       uint256 timeStamp;
 
    }
 
@@ -69,7 +78,7 @@ contract HealthSearch is Ownable {
 
    modifier holdingTokensSameAsNumberOfSearches() {
      require(token.balanceOf(msg.sender) >= numbeOfSearches[msg.sender]);
-     require(numbeOfSearches[msg.sender] >= maxSearches);
+     require(numbeOfSearches[msg.sender] <= maxSearches);
 
      _;
    }
@@ -113,20 +122,50 @@ contract HealthSearch is Ownable {
 
    function getPotentialSellers(bytes32 tag1, bytes32 tag2)
        public
-       constant
        returns (bytes32[])
    {
      bytes32 id = keccak256(abi.encodePacked(tag1, tag2));
-
      bytes32[] memory toReturn=new bytes32[](sellerInformation[id].length);
 
      for ( uint i = 0; i < sellerInformation[id].length; i++) {
+       if((block.timestamp-sellerInformation[id][i].timeStamp)>=2630000){
+         delete sellerInformation[id][i];
+         numbeOfSearches[sellerInformation[id][i].owner]--;
+         require(token.transferFrom(this,sellerInformation[id][i].owner,PricePerTag));
+         i--;
+         continue;
+       }
+
        toReturn[i]=sellerInformation[id][i].contact;
      }
 
      return  toReturn;
 
    }
+
+
+   function getPotentialBuyers(bytes32 tag1, bytes32 tag2)
+       public
+       returns (bytes32[])
+   {
+     bytes32 id = keccak256(abi.encodePacked(tag1, tag2));
+     bytes32[] memory toReturn=new bytes32[](buyingInformation[id].length);
+
+     for ( uint i = 0; i < buyingInformation[id].length; i++) {
+       if((block.timestamp-buyingInformation[id][i].timeStamp)>=2630000){
+         delete buyingInformation[id][i];
+         numbeOfSearches[buyingInformation[id][i].owner]--;
+         require(token.transferFrom(this,buyingInformation[id][i].owner,PricePerTag));
+         i--;
+         continue;
+       }
+       toReturn[i]=buyingInformation[id][i].contact;
+     }
+
+     return  toReturn;
+
+   }
+
 
 
    function deletePotentialSellers(bytes32 tag1, bytes32 tag2)//, bytes32 contact)
@@ -139,6 +178,8 @@ contract HealthSearch is Ownable {
        if( sellerInformation[id][i].owner==msg.sender){
          delete sellerInformation[id][i];
          numbeOfSearches[msg.sender]--;
+         require(token.transferFrom(this,msg.sender,PricePerTag));
+         break;
        }
      }
    }
@@ -154,6 +195,8 @@ contract HealthSearch is Ownable {
        if( buyingInformation[id][i].owner==msg.sender){
          delete buyingInformation[id][i];
          numbeOfSearches[msg.sender]--;
+         require(token.transferFrom(this,msg.sender,PricePerTag));
+         break;
        }
      }
 
@@ -161,7 +204,7 @@ contract HealthSearch is Ownable {
 
 
 
-   function setPotentialSellers(bytes32 tag1, bytes32 tag2, bytes32 contact)
+   function setPotentialSellers(bytes32 keyId, bytes32 tag1, bytes32 tag2, bytes32 contact)
        public
 
        holdingTokensSameAsNumberOfSearches()
@@ -169,9 +212,24 @@ contract HealthSearch is Ownable {
    {
 
      bytes32 id = keccak256(abi.encodePacked(tag1, tag2));
-     /*require(sellerInformation[id].owner == address(0)); //prevent overwriting*/
+     for ( uint i = 0; i < sellerInformation[id].length; i++) {
+       if((block.timestamp-sellerInformation[id][i].timeStamp)>=2630000){
+         delete sellerInformation[id][i];
+         numbeOfSearches[sellerInformation[id][i].owner]--;
+         require(token.transferFrom(this,sellerInformation[id][i].owner,PricePerTag));
+         i--;
+         continue;
+       }
+     }
+
+     require(buyingInformation[id].length<=maxSearchesPerTag);
+     require(token.transferFrom(msg.sender,this,PricePerTag));
+
+
      sellingData memory newData;
      newData.tag1=tag1;
+     newData.keyId=keyId;
+     newData.timeStamp=block.timestamp;
      newData.owner = msg.sender;
      newData.tag2=tag2;
      newData.contact=contact;
@@ -180,18 +238,37 @@ contract HealthSearch is Ownable {
 
    }
 
-   function setPotentialBuyers(bytes32 tag1, bytes32 tag2, bytes32 contact)
+   function setPotentialBuyers(bytes32 keyId,bytes32 tag1, bytes32 tag2, bytes32 contact)
        public
 
        holdingTokensSameAsNumberOfSearches()
 
 
    {
+
+
+
      bytes32 id = keccak256(abi.encodePacked( tag1, tag2));
+
+     for ( uint i = 0; i < buyingInformation[id].length; i++) {
+       if((block.timestamp-buyingInformation[id][i].timeStamp)>=2630000){
+         delete buyingInformation[id][i];
+         numbeOfSearches[buyingInformation[id][i].owner]--;
+         require(token.transferFrom(this,buyingInformation[id][i].owner,PricePerTag));
+         i--;
+         continue;
+       }
+     }
+
+     require(buyingInformation[id].length<=maxSearchesPerTag);
+     require(token.transferFrom(msg.sender,this,PricePerTag));
+
      /*require(buyingInformation[id].owner == address(0)); //prevent overwriting*/
      buyingData memory newData;
 
-    newData.tag1=tag1;
+     newData.tag1=tag1;
+     newData.keyId=keyId;
+     newData.timeStamp=block.timestamp;
      newData.owner = msg.sender;
      newData.tag2=tag2;
      newData.contact=contact;
@@ -201,21 +278,6 @@ contract HealthSearch is Ownable {
    }
 
 
-   function getPotentialBuyers(bytes32 tag1, bytes32 tag2)
-       public
-       constant
-       returns (bytes32[])
-   {
-     bytes32 id = keccak256(abi.encodePacked(tag1, tag2));
-     bytes32[] memory toReturn=new bytes32[](buyingInformation[id].length);
-
-     for ( uint i = 0; i < buyingInformation[id].length; i++) {
-       toReturn[i]=buyingInformation[id][i].contact;
-     }
-
-     return  toReturn;
-
-   }
 
 
    /**
