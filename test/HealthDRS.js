@@ -15,7 +15,8 @@ contract('HealthDRS', function(accounts) {
     this.token = await HealthCashMock.new()
     this.drs = await HealthDRS.new(this.token.address)
     this.url = 'https://blogs.scientificamerican.com/observations/consciousness-goes-deeper-than-you-think/'
-      
+    await this.token.approve(this.drs.address,100000);
+
 
   })
 

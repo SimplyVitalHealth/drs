@@ -5,7 +5,7 @@ const should = require('chai')
   .use(require('chai-bignumber')(BigNumber))
   .should()
 
-var HealthCashMock = artifacts.require('./helpers/HealthCashMock.sol');  
+var HealthCashMock = artifacts.require('./helpers/HealthCashMock.sol');
 var HealthDRS = artifacts.require("./HealthDRS.sol")
 import isAddress from './helpers/isAddress'
 
@@ -14,9 +14,11 @@ contract('HealthDRS :: Share', function(accounts) {
   beforeEach(async function() {
     this.token = await HealthCashMock.new()
     this.drs = await HealthDRS.new(this.token.address)
-    this.url = 'https://blogs.scientificamerican.com/observations/consciousness-goes-deeper-than-you-think/'    
+    this.url = 'https://blogs.scientificamerican.com/observations/consciousness-goes-deeper-than-you-think/'
+    await this.token.approve(this.drs.address,100000);
+
   })
-  
+
   it('service owners should be able to share a service', async function() {
     let tx = await this.drs.createService(this.url)
     let service = tx.logs[0].args._service
@@ -66,7 +68,7 @@ contract('HealthDRS :: Share', function(accounts) {
   it('non-shareable key should not be able to share', async function() {
     let tx = await this.drs.createService(this.url)
     let service = tx.logs[0].args._service
-    
+
     //key is not shareable by default
     let tx2 = await this.drs.createKey(service)
     let childKey = tx2.logs[0].args._key

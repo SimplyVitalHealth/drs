@@ -16,7 +16,9 @@ contract('HealthDRS :: Manage', function(accounts) {
     this.drs = await HealthDRS.new(this.token.address)
     this.url = 'https://blogs.scientificamerican.com/observations/consciousness-goes-deeper-than-you-think/'
     let tx = await this.drs.createService(this.url)
-    this.service = tx.logs[0].args._service       
+    this.service = tx.logs[0].args._service
+    await this.token.approve(this.drs.address,100000);
+
   })
 
   it('should be able to get a key', async function() {
@@ -41,7 +43,7 @@ contract('HealthDRS :: Manage', function(accounts) {
     await this.drs.setKeyPermissions(key1, true, true, false)
     key = await this.drs.getKey(key1)
     key[1].should.equal(true)
-    key[2].should.equal(true)    
+    key[2].should.equal(true)
   })
 
   it('should be able to get service count', async function() {
@@ -63,35 +65,35 @@ contract('HealthDRS :: Manage', function(accounts) {
 
   it('should be able to get a key from the key list', async function() {
     let tx = await this.drs.createKey(this.service)
-    let key = tx.logs[0].args._key    
+    let key = tx.logs[0].args._key
     let retrievedKey = await this.drs.keyList(0)
     retrievedKey.should.be.equal(key)
   })
 
-  it('A service should be able to store key data', async function() {		
-      let tx = await this.drs.createKey(this.service)		
-      let key = tx.logs[0].args._key		
-  		
-      //set data - requires service owner
-      await this.drs.setKeyData(key, 'permissions', 'read')		
-      //readable by anyone
-      let permissions = await this.drs.getKeyData(key, 'permissions', {from: accounts[1]})		
-      		
-      //because we are using bytes32 we have to do some processing 
-      //to get it back to how we sent it, using the string type 
-      //would avoid this but would prevent this functions from 
-      //being useful to other contracts		
-      web3.toAscii(permissions).replace(/\0/g,'').should.equal('read')		
-      		
-   })		
-  		
-  it('A non-owner should not be able to store key data', async function() {		
-    let tx = await this.drs.createKey(this.service)		
-    let key = tx.logs[0].args._key		
+  it('A service should be able to store key data', async function() {
+      let tx = await this.drs.createKey(this.service)
+      let key = tx.logs[0].args._key
 
-    await this.drs.setKeyData(key, 'permissions', 'read', {from: accounts[1]})		
-    let permissions = await this.drs.getKeyData(key, 'permissions', {from: accounts[1]})		
+      //set data - requires service owner
+      await this.drs.setKeyData(key, 'permissions', 'read')
+      //readable by anyone
+      let permissions = await this.drs.getKeyData(key, 'permissions', {from: accounts[1]})
+
+      //because we are using bytes32 we have to do some processing
+      //to get it back to how we sent it, using the string type
+      //would avoid this but would prevent this functions from
+      //being useful to other contracts
+      web3.toAscii(permissions).replace(/\0/g,'').should.equal('read')
+
+   })
+
+  it('A non-owner should not be able to store key data', async function() {
+    let tx = await this.drs.createKey(this.service)
+    let key = tx.logs[0].args._key
+
+    await this.drs.setKeyData(key, 'permissions', 'read', {from: accounts[1]})
+    let permissions = await this.drs.getKeyData(key, 'permissions', {from: accounts[1]})
     permissions.should.be.equal('0x0000000000000000000000000000000000000000000000000000000000000000') //mapping default (unset) value
   })
 
-})  
+})
