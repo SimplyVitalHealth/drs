@@ -10,7 +10,7 @@ contract MessagingInbox {
   address [] private contactList;
   uint256 private contactListSize;
 
-  uint8 contactPrice;
+  uint256 contactPrice;
 
  constructor(StandardToken _token) public {
   owner=msg.sender;
@@ -20,7 +20,7 @@ contract MessagingInbox {
 
 
   modifier onlyOwner() {
-    require(owner != msg.sender);
+    require(owner == msg.sender);
     _;
   }
 
@@ -36,7 +36,7 @@ function contactAddToList() public {
     contactList.push(msg.sender);
   }
 
-function getContacts() public onlyOwner returns (address[]){
+function getContacts() public onlyOwner constant returns (address[]){
         return contactList;
   }
 
@@ -50,28 +50,34 @@ function deleteContact(address toDelete) public onlyOwner{
   }
 
 
-function setPrice(uint8 newPrice) public onlyOwner{
+function setPrice(uint256 newPrice) public onlyOwner{
 
       contactPrice=newPrice;
   }
+
+
+  function getPrice() public constant returns (uint256) {
+
+        return contactPrice;
+    }
 
 
 function sendMessage(string newMessage) public {
   if(messages[msg.sender].length<100)
     messages[msg.sender].push(newMessage);
   else{
-    for(uint8 i=0;i<messages[msg.sender].length-1;i++){
+    for(uint256 i=0;i<messages[msg.sender].length-1;i++){
       messages[msg.sender][i]=messages[msg.sender][i+1];
     }
     messages[msg.sender][99]=newMessage;
   }
   }
 
-  function getMessagelenght(address retrieveID) public constant onlyOwner returns (uint256){
+  function getMessagelength(address retrieveID) public constant onlyOwner returns (uint256){
           return messages[retrieveID].length;
     }
 
-  function getMessage(address retrieveID,uint8 index) public constant onlyOwner returns (string){
+  function getMessage(address retrieveID,uint256 index) public constant onlyOwner returns (string){
     return messages[retrieveID][index];
   }
 
