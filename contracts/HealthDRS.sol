@@ -107,16 +107,13 @@ contract HealthDRS is Ownable {
      _;
    }
 
-
-
-
    //prevent accidentally​ sending/trapping ether
-   function() {
+   function() public {
        revert();
    }
 
   //require token specified at deployment
-   constructor(StandardToken _token) public{
+  constructor(StandardToken _token) public {
       token = _token;
   }
 
@@ -501,7 +498,7 @@ contract HealthDRS is Ownable {
        uint8 v,
        bytes32 r,
        bytes32 s)
-       constant
+       pure
        public
        returns (address)
    {

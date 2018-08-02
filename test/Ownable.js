@@ -12,11 +12,13 @@ contract('HealthDRS :: Ownable', function(accounts) {
   beforeEach(async function() {
     this.token = await HealthCashMock.new()
     this.ownable = await HealthDRS.new(this.token.address)
+    await this.token.approve(this.ownable.address,100000);
+
   })
 
   it('should have an owner', async function() {
     let owner = await this.ownable.owner()
-    owner.should.not.be.equal(0)    
+    owner.should.not.be.equal(0)
   })
 
   it('changes owner after transfer', async function() {
@@ -24,25 +26,33 @@ contract('HealthDRS :: Ownable', function(accounts) {
     await this.ownable.transferOwnership(other)
     let owner = await this.ownable.owner();
 
-    owner.should.be.equal(other)    
+    owner.should.be.equal(other)
   })
 
   it('should prevent non-owners from transfering', async function() {
     const other = accounts[1]
     let owner = await this.ownable.owner.call()
-    owner.should.not.be.equal(other)    
+    owner.should.not.be.equal(other)
 
-    await this.ownable.transferOwnership(other, {from: other})
+    try {
+      await this.ownable.transferOwnership(other, {from: other})
+    } catch (e) {
+      //console.log(e)
+    }
+    
     owner = await this.ownable.owner.call()
-
     owner.should.not.be.equal(other)
   })
 
   it('should guard ownership against stuck state', async function() {
     let originalOwner = await this.ownable.owner()
-    await this.ownable.transferOwnership(null, {from: originalOwner})
-    let newOwner = await this.ownable.owner()
+    try {
+      await this.ownable.transferOwnership(null, {from: originalOwner})
+    } catch (e) {
+      //console.log(e)
+    }
 
+    let newOwner = await this.ownable.owner()
     newOwner.should.be.equal(originalOwner)
   })
 
