@@ -54,6 +54,10 @@ $ truffle compile
 # Deploy contracts
 $ truffle migrate
 ```
+## Replace Health Token
+Health Token is required for migration of the compiled contracts. For development: Install Health-Nexus/healthcashtoken by following the steps of installation, note a string labeled "healthcashtoken" which can be found in the output obtained after installing the same.
+
+Replace the existing token on line no.2 in 'migrations/2_deploy_contracts.js'with the one obtained from above.
 
 ## Testing
 
