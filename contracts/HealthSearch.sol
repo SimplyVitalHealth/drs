@@ -20,9 +20,7 @@ contract HealthSearch is Ownable {
    uint constant public minimumHold = 1000;
    uint constant public maxSearches = 8;
    uint constant public maxSearchesPerTag = 8;
-
    uint constant public PricePerTag = 1;
-
 
    struct Service {
        string url;
@@ -37,9 +35,6 @@ contract HealthSearch is Ownable {
        bytes32 service;
    }
 
-
-
-//market
    struct buyingData {
        bytes32 keyId;
        bytes32 tag1;
@@ -49,8 +44,6 @@ contract HealthSearch is Ownable {
        uint256 timeStamp;
 
    }
-
-//market
 
    struct sellingData {
        bytes32 keyId;
@@ -62,10 +55,7 @@ contract HealthSearch is Ownable {
 
    }
 
-
-   //market
-
-      struct developerSearch {
+    struct developerSearch {
           bytes32 keyId;
           bytes32 tag1;
           bytes32 tag2;
@@ -75,16 +65,10 @@ contract HealthSearch is Ownable {
 
       }
 
-   //market
    mapping(bytes32 => sellingData[]) private sellerInformation;
    mapping(bytes32 => buyingData[]) private buyingInformation;
    mapping(bytes32 => developerSearch[]) private developerSearchInformation;
-
    mapping(address => uint) private numbeOfSearches;
-
-
-
-   //certain functions require the user to have tokens
 
    modifier holdingTokensSameAsNumberOfSearches() {
      /*require(token.balanceOf(msg.sender) >= numbeOfSearches[msg.sender]);
@@ -93,20 +77,14 @@ contract HealthSearch is Ownable {
      _;
    }
 
-
-   //prevent accidentally​ sending/trapping ether
    function() {
        revert();
    }
 
-  //require token specified at deployment
    constructor(StandardToken _token) public{
       token = _token;
-  }
+    }
 
-
-
-   //allow owner access to tokens erroneously transferred to this contract
    function recoverTokens(StandardToken _token, uint amount) public onlyOwner {
        _token.transfer(owner, amount);
    }
@@ -119,7 +97,6 @@ contract HealthSearch is Ownable {
        latestContract = _contract;
    }
 
-   //user must authorize this contract to spend Health Cash (HLTH)
    function authorizedToSpend() public constant returns (uint) {
        return token.allowance(msg.sender, address(this));
    }
@@ -128,8 +105,6 @@ contract HealthSearch is Ownable {
    /**
    * Market Search
    */
-   /*mapping(bytes32 => bytes32[]) public sellerInformation;
-   mapping(bytes32 => bytes32[]) public buyingInformation;*/
 
    function getPotentialSellers(bytes32 tag1, bytes32 tag2)
        public
@@ -138,14 +113,11 @@ contract HealthSearch is Ownable {
    {
      bytes32 id = keccak256(abi.encodePacked(tag1, tag2));
      bytes32[] memory toReturn=new bytes32[](sellerInformation[id].length);
-
      for ( uint i = 0; i < sellerInformation[id].length; i++) {
 
        toReturn[i]=sellerInformation[id][i].contact;
      }
-
      return  toReturn;
-
    }
 
 
@@ -156,13 +128,10 @@ contract HealthSearch is Ownable {
    {
      bytes32 id = keccak256(abi.encodePacked(tag1, tag2));
      bytes32[] memory toReturn=new bytes32[](buyingInformation[id].length);
-
      for ( uint i = 0; i < buyingInformation[id].length; i++) {
        toReturn[i]=buyingInformation[id][i].contact;
      }
-
      return  toReturn;
-
    }
 
 
@@ -173,22 +142,18 @@ contract HealthSearch is Ownable {
    {
      bytes32 id = keccak256(abi.encodePacked(tag1, tag2));
      bytes32[] memory toReturn=new bytes32[](developerSearchInformation[id].length);
-
      for ( uint i = 0; i < developerSearchInformation[id].length; i++) {
        toReturn[i]=developerSearchInformation[id][i].contact;
      }
-
      return  toReturn;
-
    }
 
 
-   function deletePotentialSellers(bytes32 tag1, bytes32 tag2)//, bytes32 contact)
+   function deletePotentialSellers(bytes32 tag1, bytes32 tag2)
        public
 
    {
      bytes32 id = keccak256(abi.encodePacked(tag1, tag2));
-     /*require(sellingData[id].owner == msg.sender); //Ensures existence*/
      for(uint i=0;i<sellerInformation[id].length;i++){
        if( sellerInformation[id][i].owner==msg.sender){
          delete sellerInformation[id][i];
@@ -199,10 +164,8 @@ contract HealthSearch is Ownable {
      }
    }
 
-   function deletePotentialBuyers(bytes32 tag1, bytes32 tag2)//, bytes32 contact)
+   function deletePotentialBuyers(bytes32 tag1, bytes32 tag2)
        public
-
-
    {
      bytes32 id = keccak256(abi.encodePacked(tag1, tag2));
      for(uint i=0;i<buyingInformation[id].length;i++)
@@ -217,10 +180,8 @@ contract HealthSearch is Ownable {
 
    }
 
-   function deleteDeveloperSearchInformation(bytes32 tag1, bytes32 tag2)//, bytes32 contact)
+   function deleteDeveloperSearchInformation(bytes32 tag1, bytes32 tag2)
        public
-
-
    {
      bytes32 id = keccak256(abi.encodePacked(tag1, tag2));
      for(uint i=0;i<developerSearchInformation[id].length;i++)
@@ -237,7 +198,6 @@ contract HealthSearch is Ownable {
 
    function setPotentialSellers(bytes32 keyId, bytes32 tag1, bytes32 tag2, bytes32 contact)
        public
-
        holdingTokensSameAsNumberOfSearches()
 
    {
@@ -261,7 +221,6 @@ contract HealthSearch is Ownable {
      require(PricePerTag <= authorizedToSpend());
      require(token.transferFrom(msg.sender,this,PricePerTag));
 
-
      sellingData memory newData;
      newData.tag1=tag1;
      newData.keyId=keyId;
@@ -273,21 +232,15 @@ contract HealthSearch is Ownable {
       sellerInformation[id].push(newData);
      else
       sellerInformation[id][indexOfZero-1]=newData;
-
-
    }
 
    function setPotentialBuyers(bytes32 keyId,bytes32 tag1, bytes32 tag2, bytes32 contact)
        public
-
        holdingTokensSameAsNumberOfSearches()
-
-
    {
      bytes32 id = keccak256(abi.encodePacked( tag1, tag2));
      uint indexOfZero=0;
      uint numOfZeros=0;
-
      for ( uint i = 0; i < buyingInformation[id].length; i++) {
        if((block.timestamp-buyingInformation[id][i].timeStamp)>=2630000){
          delete buyingInformation[id][i];
@@ -301,14 +254,11 @@ contract HealthSearch is Ownable {
        }
 
      }
-
      require((buyingInformation[id].length-numOfZeros)<=maxSearchesPerTag);
      require(PricePerTag <= authorizedToSpend());
      require(token.transferFrom(msg.sender,this,PricePerTag));
 
-     /*require(buyingInformation[id].owner == address(0)); //prevent overwriting*/
      buyingData memory newData;
-
      newData.tag1=tag1;
      newData.keyId=keyId;
      newData.timeStamp=block.timestamp;
@@ -320,21 +270,16 @@ contract HealthSearch is Ownable {
      else
       buyingInformation[id][indexOfZero-1]=newData;
      numbeOfSearches[msg.sender]++;
-
    }
 
 
    function setDeveloperSearchInformation(bytes32 keyId,bytes32 tag1, bytes32 tag2, bytes32 contact)
        public
-
        holdingTokensSameAsNumberOfSearches()
-
-
    {
      bytes32 id = keccak256(abi.encodePacked( tag1, tag2));
      uint indexOfZero=0;
      uint numOfZeros=0;
-
      for ( uint i = 0; i < developerSearchInformation[id].length; i++) {
        if((block.timestamp-developerSearchInformation[id][i].timeStamp)>=2630000){
          delete developerSearchInformation[id][i];
@@ -346,16 +291,12 @@ contract HealthSearch is Ownable {
           indexOfZero=i+1;
          numOfZeros++;
        }
-
      }
-
      require((developerSearchInformation[id].length-numOfZeros)<=maxSearchesPerTag);
      require(PricePerTag <= authorizedToSpend());
      require(token.transferFrom(msg.sender,this,PricePerTag));
 
-     /*require(buyingInformation[id].owner == address(0)); //prevent overwriting*/
      developerSearch memory newData;
-
      newData.tag1=tag1;
      newData.keyId=keyId;
      newData.timeStamp=block.timestamp;
@@ -369,8 +310,6 @@ contract HealthSearch is Ownable {
      numbeOfSearches[msg.sender]++;
 
    }
-
-
 
    /**
    * ecrecover passthrough
