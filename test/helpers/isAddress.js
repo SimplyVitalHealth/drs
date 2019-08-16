@@ -26,4 +26,4 @@ var isChecksumAddress = function (address) {
     return true;
 }
 
-export default isAddress;
+module.export = isAddress;

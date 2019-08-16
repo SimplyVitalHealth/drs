@@ -12,10 +12,11 @@
     "chai-as-promised": "^7.1.1",
     "chai-bignumber": "^2.0.1",
     "ethereumjs-util": "^5.1.2",
-    "mocha": "^3.5.0",
-    "truffle-contract": "^2.0.5"
+    "mocha": "^6.2.0",
+    "truffle-contract": "^4.0.26"
   },
   "dependencies": {
-    "zeppelin-solidity": "~1.2.0"
+    "openzeppelin-solidity": "^2.3.0",
+    "solc": "^0.5.2"
   }
 }
