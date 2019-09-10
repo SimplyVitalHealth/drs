@@ -7,7 +7,7 @@ const should = require('chai')
 
 var HealthCashMock = artifacts.require('./helpers/HealthCashMock.sol');  
 var HealthDRS = artifacts.require("./HealthDRS.sol")
-import isAddress from './helpers/isAddress'
+var isAddress = require('./helpers/isAddress')
 
 contract('HealthDRS :: Share', function(accounts) {
 
