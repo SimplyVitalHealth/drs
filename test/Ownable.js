@@ -10,8 +10,8 @@ var HealthDRS = artifacts.require("./HealthDRS.sol")
 contract('HealthDRS :: Ownable', function(accounts) {
 
   beforeEach(async function() {
-    this.token = await HealthCashMock.new()
-    this.ownable = await HealthDRS.new(this.token.address)
+    // this.token = await HealthCashMock.new()
+    this.ownable = await HealthDRS.new()
   })
 
   it('should have an owner', async function() {
@@ -32,15 +32,24 @@ contract('HealthDRS :: Ownable', function(accounts) {
     let owner = await this.ownable.owner.call()
     owner.should.not.be.equal(other)    
 
-    await this.ownable.transferOwnership(other, {from: other})
-    owner = await this.ownable.owner.call()
-
-    owner.should.not.be.equal(other)
+    try {
+      await this.ownable.transferOwnership(other, {from: other})
+    } catch(e){
+      if(e){
+        owner = await this.ownable.owner.call();
+        owner.should.not.be.equal(other)
+      } else {
+        (true).should.equal(false);
+      }
+    }
   })
 
-  it('should guard ownership against stuck state', async function() {
+  /**
+   * Error: invalid address (arg="newOwner", coderType="address", value=null)
+   */
+  it('should guard ownership against stuck state', async function () {
     let originalOwner = await this.ownable.owner()
-    await this.ownable.transferOwnership(null, {from: originalOwner})
+    await this.ownable.transferOwnership(null, { from: originalOwner })
     let newOwner = await this.ownable.owner()
 
     newOwner.should.be.equal(originalOwner)

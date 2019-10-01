@@ -12,8 +12,8 @@ var isAddress = require('./helpers/isAddress')
 contract('HealthDRS', function(accounts) {
 
   beforeEach(async function() {
-    this.token = await HealthCashMock.new()
-    this.drs = await HealthDRS.new(this.token.address)
+    // this.token = await HealthCashMock.new()
+    this.drs = await HealthDRS.new()
     this.url = 'https://blogs.scientificamerican.com/observations/consciousness-goes-deeper-than-you-think/'    
   })
   
@@ -24,11 +24,17 @@ contract('HealthDRS', function(accounts) {
     owner.should.equal(true);    
   })
  
+  /**
+   * AssertionError: expected 1 to equal 0
+   */
   it('non holder should not be able to create a service', async function() {
     let tx = await this.drs.createService(this.url,{from: accounts[1]})
     tx.logs.length.should.equal(0);    
   })
 
+  /**
+   * TypeError: Cannot read property 'transfer' of undefined
+   */
   it('non holder should be able to create a service after procuring health cash', async function() {
     let min = await this.drs.minimumHold()
     await this.token.transfer(accounts[1],min.toNumber())

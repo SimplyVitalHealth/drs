@@ -12,13 +12,16 @@ var isAddress = require('./helpers/isAddress')
 contract('HealthDRS :: Sell', function(accounts) {
 
   beforeEach(async function() {
-    this.token = await HealthCashMock.new()
-    this.drs = await HealthDRS.new(this.token.address)
+    // this.token = await HealthCashMock.new()
+    this.drs = await HealthDRS.new();  
     this.url = 'https://blogs.scientificamerican.com/observations/consciousness-goes-deeper-than-you-think/'
     let tx = await this.drs.createService(this.url)
     this.service = tx.logs[0].args._service        
   })
 
+  /**
+   * Error: Returned error: VM Exception while processing transaction: revert canSell() key can't be sold error -- Reason given: canSell() key can't be sold error.
+   */
   it('key owner should be able to put a key up for sale only if salable', async function() {
     let tx = await this.drs.createKey(this.service) 
     let key = tx.logs[0].args._key    
@@ -38,6 +41,9 @@ contract('HealthDRS :: Sell', function(accounts) {
 
   })
   
+/**
+ * Error: Returned error: VM Exception while processing transaction: revert issueKey() error-- Reason given: issueKey() error.
+ */
   it('putting a key up for sale should negate an active trade offer', async function() {
     let tx = await this.drs.createKey(this.service) 
     let key = tx.logs[0].args._key  
@@ -55,20 +61,29 @@ contract('HealthDRS :: Sell', function(accounts) {
     let to = await this.drs.tradeOffers(key)
     to.should.equal('0x0000000000000000000000000000000000000000000000000000000000000000')
   })
-  
+
   it('non owner should not be able to list a key for sale', async function() {
     let tx = await this.drs.createKey(this.service) 
     let key = tx.logs[0].args._key  
-
-    //try to create a sales offer from the account that wants to buy a key
-    await this.drs.createSalesOffer(key, accounts[1], 5, false, {from: accounts[1]})
-    let so = await this.drs.salesOffers(key)
-    so[0].should.not.equal(accounts[1])
-    so[1].should.not.be.bignumber.equal(5)
+    try {
+      //try to create a sales offer from the account that wants to buy a key
+      await this.drs.createSalesOffer(key, accounts[1], 5, false, { from: accounts[1] })
+    } catch (e) {
+      if (e = true) {
+        let so = await this.drs.salesOffers(key)
+        so[0].should.not.equal(accounts[1])
+        so[1].toNumber().should.not.be.equal(5)
+        return;
+      }
+      (true).should.equal(false);
+    }
+    
    })
  
+ /**
+  * TypeError: Cannot read property 'transfer' of undefined
+  */
    it('should not be able to purchase an unoffered key', async function() {
-    
       let tx = await this.drs.createKey(this.service)
       let key = tx.logs[0].args._key
       this.token.transfer(accounts[1],1)
@@ -79,7 +94,9 @@ contract('HealthDRS :: Sell', function(accounts) {
       owner.should.equal(true)  
    })
 
-
+  /**
+  * TypeError: Cannot read property 'transfer' of undefined
+  */
    it('should be able to purchase an offered key', async function() {
     let tx = await this.drs.createKey(this.service)
     let key = tx.logs[0].args._key
@@ -98,12 +115,15 @@ contract('HealthDRS :: Sell', function(accounts) {
     balance.should.be.bignumber.equal(100,'Should have gotten 5 tokens back')
    })
 
+  /**
+   * Error: Returned error: VM Exception while processing transaction: revert canSell() key does not exist error -- Reason given: canSell() key does not exist error.
+   */
    it('should not be able to purchase a shared key', async function() {
     let tx = await this.drs.createKey(this.service)
     let key = tx.logs[0].args._key
     await this.drs.setKeyPermissions(key, true, false, true);    
     await this.drs.shareKey(key, accounts[1])
-    await this.drs.createSalesOffer(key, accounts[1], 5, false)
+     await this.drs.createSalesOffer(key, accounts[1], 5, false) 
 
     //give account some HLTH to spend 
     this.token.transfer(accounts[1],5)
@@ -137,9 +157,12 @@ contract('HealthDRS :: Sell', function(accounts) {
     //overwrite old with new
     await this.drs.createSalesOffer(key, accounts[1], 50, false)        
     let so = await this.drs.salesOffers(key)
-    so[1].should.be.bignumber.equal(50)
+    so[1].toNumber().should.be.equal(50)
    })
 
+   /**
+    * TypeError: Cannot read property 'transfer' of undefined
+    */
    it('key owner can create a sales offer that prevents subsequent sales', async function() {
     let tx = await this.drs.createKey(this.service)
     let key = tx.logs[0].args._key

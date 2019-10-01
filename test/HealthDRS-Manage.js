@@ -12,8 +12,8 @@ var isAddress = require('./helpers/isAddress')
 contract('HealthDRS :: Manage', function(accounts) {
 
   beforeEach(async function() {
-    this.token = await HealthCashMock.new()
-    this.drs = await HealthDRS.new(this.token.address)
+    // this.token = await HealthCashMock.new()
+    this.drs = await HealthDRS.new();  
     this.url = 'https://blogs.scientificamerican.com/observations/consciousness-goes-deeper-than-you-think/'
     let tx = await this.drs.createService(this.url)
     this.service = tx.logs[0].args._service       
@@ -46,7 +46,7 @@ contract('HealthDRS :: Manage', function(accounts) {
 
   it('should be able to get service count', async function() {
     let count = await this.drs.getServiceCount()
-    count.should.be.bignumber.equal(1)
+    count.toNumber().should.be.equal(1)
   })
 
   it('should be able to get a service key from the service list', async function() {
@@ -54,12 +54,16 @@ contract('HealthDRS :: Manage', function(accounts) {
     service1.should.be.equal(this.service)
   })
 
+/**
+ * Error: Returned error: VM Exception while processing transaction: revert issueKey() error -- Reason given: issueKey() error.
+ */ 
   it('should be able to get key count', async function() {
     await this.drs.createKey(this.service)
     await this.drs.createKey(this.service)
     let count = await this.drs.getKeyCount()
     count.should.be.bignumber.equal(2)
   })
+
 
   it('should be able to get a key from the key list', async function() {
     let tx = await this.drs.createKey(this.service)
@@ -68,6 +72,9 @@ contract('HealthDRS :: Manage', function(accounts) {
     retrievedKey.should.be.equal(key)
   })
 
+  /**
+   * Error: invalid bytes32 value (arg="dataKey", coderType="bytes32", value="permissions")
+   */ 
   it('A service should be able to store key data', async function() {		
       let tx = await this.drs.createKey(this.service)		
       let key = tx.logs[0].args._key		
@@ -84,7 +91,10 @@ contract('HealthDRS :: Manage', function(accounts) {
       web3.toAscii(permissions).replace(/\0/g,'').should.equal('read')		
       		
    })		
-  		
+
+  /**
+  * Error: invalid bytes32 value (arg="dataKey", coderType="bytes32", value="permissions")
+  */
   it('A non-owner should not be able to store key data', async function() {		
     let tx = await this.drs.createKey(this.service)		
     let key = tx.logs[0].args._key		

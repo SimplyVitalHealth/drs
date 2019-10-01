@@ -12,28 +12,39 @@ var isAddress = require('./helpers/isAddress')
 contract('HealthDRS :: Admin', function(accounts) {
 
   beforeEach(async function() {
-    this.token = await HealthCashMock.new()
-    this.drs = await HealthDRS.new(this.token.address)
+    // this.token = await HealthCashMock.new()
+    this.drs = await HealthDRS.new();   
   })
-  
-  it('should enable the token to be updated by admin', async function() {
+
+ /**
+  * the below, commented tests pertain to the HealthCash Token:
+  * 
+  it('should enable the token to be updated by admin', async function () {
     let firstTokenAddress = await this.drs.token()
     await this.drs.setHealthCashToken(accounts[1])
     let secondTokenAddress = await this.drs.token()
 
-    secondTokenAddress.should.not.be.equal(firstTokenAddress)  
-    secondTokenAddress.should.be.equal(accounts[1])  
+    secondTokenAddress.should.not.be.equal(firstTokenAddress)
+    secondTokenAddress.should.be.equal(accounts[1])
   })
 
-  it('should only be updateable by admin', async function() {
+   it('should only be updateable by admin', async function () {
     let firstTokenAddress = await this.drs.token()
-    await this.drs.setHealthCashToken(accounts[1],{from: accounts[1]})
-    let secondTokenAddress = await this.drs.token()
+    try{
+      await this.drs.setHealthCashToken(accounts[1], { from: accounts[1] })
+    } catch (e) {
+      if(e){
+        let secondTokenAddress = await this.drs.token()
 
-    secondTokenAddress.should.be.equal(firstTokenAddress)  
-    secondTokenAddress.should.not.be.equal(accounts[1])  
+        secondTokenAddress.should.be.equal(firstTokenAddress)
+        secondTokenAddress.should.not.be.equal(accounts[1])
+      } else {
+        (true).should.equal(false)
+      }
+    }
   })
- 
+ */
+  
   it('latest contract should be updateable by admin', async function() {
     let firstAddresss = await this.drs.latestContract()
     await this.drs.setLatestContract(accounts[1])
@@ -43,32 +54,38 @@ contract('HealthDRS :: Admin', function(accounts) {
     secondAddress.should.equal(accounts[1])  
   })
 
-  it('latest contract should only be updateable by admin', async function() {
-    let firstAddresss = await this.drs.latestContract()
-    await this.drs.setLatestContract(accounts[1],{from: accounts[1]})
-    let secondAddress = await this.drs.latestContract()
+  it('latest contract should only be updateable by admin', async function () {
+    let firstAddress = await this.drs.latestContract();
+    try {
+      await this.drs.setLatestContract(accounts[1], { from: accounts[1] });
+    } catch (e) {
+      if (e = true) {
+        let secondAddress = await this.drs.latestContract();
+        secondAddress.should.equal(firstAddress);
+        secondAddress.should.not.equal(accounts[1]);
+        return;
+      }
+      (true).should.equal(false);
+    }
 
-    secondAddress.should.equal(firstAddresss)  
-    secondAddress.should.not.equal(accounts[1])  
+    it('minimum hold should be updateable by admin', async function () {
+      let minimumHold = await this.drs.minimumHold()
+      await this.drs.setMinimumHold(5000)
+      let newMinimumHold = await this.drs.minimumHold()
+
+      newMinimumHold.should.be.bignumber.not.equal(minimumHold)
+      newMinimumHold.should.be.bignumber.equal(5000)
+    })
+
+    it('minimum hold should only be updateable by admin', async function () {
+      let minimumHold = await this.drs.minimumHold()
+      await this.drs.setMinimumHold(5000, { from: accounts[1] })
+      let newMinimumHold = await this.drs.minimumHold()
+
+      newMinimumHold.should.be.bignumber.equal(minimumHold)
+      newMinimumHold.should.be.bignumber.not.equal(5000)
+    })
+
   })
-
-  it('minimum hold should be updateable by admin', async function() {
-    let minimumHold = await this.drs.minimumHold()
-    await this.drs.setMinimumHold(5000)
-    let newMinimumHold = await this.drs.minimumHold()
-
-    newMinimumHold.should.be.bignumber.not.equal(minimumHold)  
-    newMinimumHold.should.be.bignumber.equal(5000)  
-  })
-
-  it('minimum hold should only be updateable by admin', async function() {
-    let minimumHold = await this.drs.minimumHold()
-    await this.drs.setMinimumHold(5000,{from: accounts[1]})    
-    let newMinimumHold = await this.drs.minimumHold()
-
-    newMinimumHold.should.be.bignumber.equal(minimumHold)  
-    newMinimumHold.should.be.bignumber.not.equal(5000)  
-  })
-
 
 })

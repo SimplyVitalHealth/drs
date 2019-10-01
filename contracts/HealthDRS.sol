@@ -17,7 +17,7 @@ contract HealthDRS is Ownable {
    ERC20 public token;
    address public latestContract = address(this);
    uint8 public version = 1;
-//    uint public minimumHold = 1000;
+   uint public minimumHold = 0;
 
    struct Service {
        string url;
@@ -93,11 +93,11 @@ contract HealthDRS is Ownable {
      _;
    }
 
-//    //certain functions require the user to have tokens
-//    modifier holdingTokens() {
-//      require(token.balanceOf(msg.sender) >= minimumHold, "holdingTokens() error");
-//      _;
-//    }
+    // ensure account has currency
+    modifier holdingCurrency(){
+        require(address(this).balance >= minimumHold, "holdingCurrency() error");
+        _;
+    }
 
    //prevent accidentally​ sending/trapping ether
    function() external {
@@ -208,7 +208,7 @@ contract HealthDRS is Ownable {
   */
    function createService(string memory url)
         public
-        // holdingTokens()
+        holdingCurrency()
    {
        bytes32 id = keccak256(abi.encode(msg.sender, url));
        require(services[id].owner == address(0), "createService() error"); //prevent overwriting
@@ -221,7 +221,7 @@ contract HealthDRS is Ownable {
    function createKey(bytes32 service)
        public
        ownsService(service)
-       // holdingTokens()
+       holdingCurrency()
    {
        issueKey(service, msg.sender);
    }
@@ -229,7 +229,7 @@ contract HealthDRS is Ownable {
    function issueKey(bytes32 service, address issueTo)
        public
        ownsService(service)
-       // holdingTokens()
+       holdingCurrency()
    {
        bytes32 id = keccak256(abi.encode(service, issueTo, now));
        require(keys[id].owner == address(0), "issueKey() error");
@@ -249,7 +249,7 @@ contract HealthDRS is Ownable {
        public
        ownsKey(key)
        canShare(key)
-       // holdingTokens()
+       holdingCurrency()
    {
        if (isKeyOwner(key, account) == false) {
            owners[key].push(account);
@@ -268,7 +268,7 @@ contract HealthDRS is Ownable {
    function unshareKey(bytes32 key, address account)
        public
        ownsKey(key)
-       // holdingTokens()
+       holdingCurrency()
    {
        for (uint i = 0; i < owners[key].length; i++) {
            if (owners[key][i] == account) {
