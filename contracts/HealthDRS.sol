@@ -94,6 +94,7 @@ contract HealthDRS is Ownable {
    }
 
     // ensure account has currency
+    // TODO Remove and remove all references
     modifier holdingCurrency(){
         require(address(this).balance >= minimumHold, "holdingCurrency() error");
         _;

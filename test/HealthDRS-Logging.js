@@ -12,26 +12,26 @@ contract('HealthDRS :: Logging', function(accounts) {
 
   beforeEach(async function() {
     // this.token = await HealthCashMock.new()
-    this.drs = await HealthDRS.new();  
+    this.drs = await HealthDRS.new();
     this.url = 'https://blogs.scientificamerican.com/observations/consciousness-goes-deeper-than-you-think/'
     let tx = await this.drs.createService(this.url)
-    this.service = tx.logs[0].args._service       
+    this.service = tx.logs[0].args._service
   })
-  
+
   it('should enable a key owner to log', async function() {
     let tx = await this.drs.createKey(this.service)
     let key = tx.logs[0].args._key
 
     tx = await this.drs.log(key, 'test log')
-    tx.logs[0].args._owner.should.equal(accounts[0]);    
-    tx.logs[0].args._from.should.equal(key);        
+    tx.logs[0].args._owner.should.equal(accounts[0]);
+    tx.logs[0].args._from.should.equal(key);
     tx.logs[0].args._data.should.equal('test log');
   })
 
   it('should enable a service owner to log', async function() {
     let tx = await this.drs.log(this.service, 'test log')
-    tx.logs[0].args._owner.should.equal(accounts[0]);    
-    tx.logs[0].args._from.should.equal(this.service);        
+    tx.logs[0].args._owner.should.equal(accounts[0]);
+    tx.logs[0].args._from.should.equal(this.service);
     tx.logs[0].args._data.should.equal('test log');
   })
 
@@ -39,8 +39,15 @@ contract('HealthDRS :: Logging', function(accounts) {
    * Error: Returned error: VM Exception while processing transaction: revert log() error -- Reason given: log() error.
    */
   it('should not enable a non service owner to log', async function () {
-    let tx = await this.drs.log(this.service, 'test log', { from: accounts[1] })
-    tx.logs.length.should.equal(0);
+    try {
+      let tx = await this.drs.log(this.service, 'test log', { from: accounts[1] })
+      tx.logs.length.should.equal(0);
+    }
+    catch(error){
+      console.log("ERROR: ", error, error.message)
+      error.message.should.equal('Returned error: VM Exception while processing transaction: revert -- Reason given: log() error.');
+
+    }
   })
 
   /**
@@ -51,17 +58,17 @@ contract('HealthDRS :: Logging', function(accounts) {
     let rootKey = tx.logs[0].args._key
     tx = await this.drs.log(rootKey, 'test log', { from: accounts[1] })
     tx.logs.length.should.equal(0)
-  }) 
+  })
 
   it('should enable a service owner to log access', async function() {
-    
+
     let tx = await this.drs.createKey(this.service)
     let key = tx.logs[0].args._key
 
     tx = await this.drs.logAccess(key, 'datastring')
-    tx.logs[0].args._owner.should.equal(accounts[0]);    
-    tx.logs[0].args._from.should.equal(this.service);        
-    tx.logs[0].args._to.should.equal(key);    
+    tx.logs[0].args._owner.should.equal(accounts[0]);
+    tx.logs[0].args._from.should.equal(this.service);
+    tx.logs[0].args._to.should.equal(key);
     tx.logs[0].args._data.should.equal('datastring');
   })
 
@@ -108,12 +115,12 @@ contract('HealthDRS :: Logging', function(accounts) {
     let key1 = tx.logs[0].args._key
 
     tx = await this.drs.message(this.service, key1, 'init', 'data')
-    tx.logs[0].args._owner.should.equal(accounts[0]);    
-    tx.logs[0].args._from.should.equal(this.service);        
+    tx.logs[0].args._owner.should.equal(accounts[0]);
+    tx.logs[0].args._from.should.equal(this.service);
     tx.logs[0].args._to.should.equal(key1);
-    tx.logs[0].args._category.should.equal('init');        
+    tx.logs[0].args._category.should.equal('init');
     tx.logs[0].args._data.should.equal('data');
-    
+
   })
 
   /**
