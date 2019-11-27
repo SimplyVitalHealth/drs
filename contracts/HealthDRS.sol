@@ -14,10 +14,10 @@ import '../node_modules/openzeppelin-solidity/contracts/token/ERC20/ERC20.sol';
 
 contract HealthDRS is Ownable {
 
-   ERC20 public token;
    address public latestContract = address(this);
    uint8 public version = 1;
    uint public minimumHold = 0;
+   uint256 public balance = address(this).balance;
 
    struct Service {
        string url;
@@ -183,7 +183,7 @@ contract HealthDRS is Ownable {
 
    //user must authorize this contract to spend Health Cash (HLTH)
    function authorizedToSpend() public view returns (uint) {
-       return token.allowance(msg.sender, address(this));
+    //    return token.allowance(msg.sender, address(this));
    }
 
     //allow owner access to tokens erroneously transferred to this contract
@@ -330,14 +330,14 @@ contract HealthDRS is Ownable {
    {
 
       //require explicit authority to spend tokens on the purchasers behalf
-      require(salesOffers[key].price <= authorizedToSpend(), "purchaseKey() salesOffers[key].price error");
+      require(salesOffers[key].price <= balance, "purchaseKey() salesOffers[key].price error");
       require(salesOffers[key].buyer == msg.sender, "purchaseKey() salesOffers[key].buyer error");
 
       /**
       * Price in HLTH tokens is transferred from the purchaser
       * to the primary owner of the key.
       */
-      assert(token.transferFrom(msg.sender, keys[key].owner, salesOffers[key].price));
+    //   assert(balance.transfer(msg.sender, keys[key].owner, salesOffers[key].price));
 
       emit KeySold(key, keys[key].owner, msg.sender, salesOffers[key].price);
       keys[key].owner = msg.sender;
