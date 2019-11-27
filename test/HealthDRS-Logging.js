@@ -44,7 +44,6 @@ contract('HealthDRS :: Logging', function(accounts) {
       tx.logs.length.should.equal(0);
     }
     catch(error){
-      console.log("ERROR: ", error, error.message)
       error.message.should.equal('Returned error: VM Exception while processing transaction: revert -- Reason given: log() error.');
 
     }
@@ -54,10 +53,17 @@ contract('HealthDRS :: Logging', function(accounts) {
    * Error: Returned error: VM Exception while processing transaction: revert validService() error -- Reason given: validService() error.
    */
   it('should not enable a non-owner to log', async function () {
-    let tx = await this.drs.createKey(this.service)
-    let rootKey = tx.logs[0].args._key
-    tx = await this.drs.log(rootKey, 'test log', { from: accounts[1] })
-    tx.logs.length.should.equal(0)
+    try{
+      let tx = await this.drs.createKey(this.service)
+      let rootKey = tx.logs[0].args._key
+      tx = await this.drs.log(rootKey, 'test log', { from: accounts[1] })
+      tx.logs.length.should.equal(0)
+    }
+    catch(error){
+      //valid service error, because after failing the key due to not being an owner, it then checks if its a valid service and throws an error there as well
+      error.message.should.equal('Returned error: VM Exception while processing transaction: revert -- Reason given: validService() error.');
+
+    }
   })
 
   it('should enable a service owner to log access', async function() {
