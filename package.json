@@ -16,6 +16,8 @@
     "truffle-contract": "^4.0.26"
   },
   "dependencies": {
+    "bn-chai": "^1.0.1",
+    "bn.js": "^5.0.0",
     "openzeppelin-solidity": "^2.3.0",
     "solc": "^0.5.2"
   }
