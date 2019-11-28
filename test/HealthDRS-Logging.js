@@ -47,7 +47,6 @@ contract('HealthDRS :: Logging', function(accounts) {
     }
     catch(error){
       error.message.should.equal('Returned error: VM Exception while processing transaction: revert -- Reason given: log() error.');
-
     }
   })
 
@@ -112,12 +111,17 @@ contract('HealthDRS :: Logging', function(accounts) {
    * Error: Returned error: VM Exception while processing transaction: revert issueKey() error -- Reason given: issueKey() error.
    */
   it('should not enable a non-owner to message', async function () {
-    let tx = await this.drs.createKey(this.service)
-    let key1 = tx.logs[0].args._key
-    tx = await this.drs.createKey(this.service)
-    let key2 = tx.logs[0].args._key
-    tx = await this.drs.message(key1, key2, 'init', 'data', { from: accounts[1] })
-    tx.logs.length.should.equal(0)
+    try{
+      let tx = await this.drs.createKey(this.service)
+      await utils.advanceTimeAndBlock(10000);
+      let key1 = tx.logs[0].args._key
+      tx = await this.drs.createKey(this.service)
+      let key2 = tx.logs[0].args._key
+      tx = await this.drs.message(key1, key2, 'init', 'data', { from: accounts[1] })
+      tx.logs.length.should.equal(0)
+    }catch(error){
+      error.message.should.equal('Returned error: VM Exception while processing transaction: revert -- Reason given: validService() error.');
+    }
   })
 
   it('should enable a service owner to message', async function() {
@@ -137,11 +141,15 @@ contract('HealthDRS :: Logging', function(accounts) {
    * Error: Returned error: VM Exception while processing transaction: revert message() error 1 -- Reason given: message() error 1.
    */
   it('should not enable a non service owner to message', async function () {
-    let tx = await this.drs.createKey(this.service)
-    let key1 = tx.logs[0].args._key
+    try{
+      let tx = await this.drs.createKey(this.service)
+      let key1 = tx.logs[0].args._key
 
-    tx = await this.drs.message(this.service, key1, 'init', 'data', { from: accounts[1] })
-    tx.logs.length.should.equal(0)
+      tx = await this.drs.message(this.service, key1, 'init', 'data', { from: accounts[1] })
+      tx.logs.length.should.equal(0)
+    }catch(error){
+      error.message.should.equal('Returned error: VM Exception while processing transaction: revert -- Reason given: message() error 1.');
+    }
   })
 
 
