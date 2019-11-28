@@ -1,5 +1,7 @@
 
 const BigNumber = web3.BigNumber
+const utils = require('./helpers/utils.js');
+
 const should = require('chai')
   .use(require('chai-as-promised'))
   .use(require('chai-bignumber')(BigNumber))
@@ -83,9 +85,11 @@ contract('HealthDRS :: Logging', function(accounts) {
    */
   it('should enable a key owner to message', async function () {
     let tx = await this.drs.createKey(this.service)
+    await utils.advanceTimeAndBlock(10000);
     let key1 = tx.logs[0].args._key
 
     tx = await this.drs.createKey(this.service)
+
     let key2 = tx.logs[0].args._key
 
     tx = await this.drs.message(key1, key2, 'init', 'data')
