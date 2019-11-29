@@ -37,9 +37,7 @@ contract('HealthDRS :: Logging', function(accounts) {
     tx.logs[0].args._data.should.equal('test log');
   })
 
-  /**
-   * Error: Returned error: VM Exception while processing transaction: revert log() error -- Reason given: log() error.
-   */
+
   it('should not enable a non service owner to log', async function () {
     try {
       let tx = await this.drs.log(this.service, 'test log', { from: accounts[1] })
@@ -50,9 +48,7 @@ contract('HealthDRS :: Logging', function(accounts) {
     }
   })
 
-  /**
-   * Error: Returned error: VM Exception while processing transaction: revert validService() error -- Reason given: validService() error.
-   */
+
   it('should not enable a non-owner to log', async function () {
     try{
       let tx = await this.drs.createKey(this.service)
@@ -79,9 +75,7 @@ contract('HealthDRS :: Logging', function(accounts) {
     tx.logs[0].args._data.should.equal('datastring');
   })
 
-  /**
-   * Error: Returned error: VM Exception while processing transaction: revert issueKey() error -- Reason given: issueKey() error.
-   */
+
   it('should enable a key owner to message', async function () {
     let tx = await this.drs.createKey(this.service)
     await utils.advanceTimeAndBlock(10000);
@@ -107,9 +101,7 @@ contract('HealthDRS :: Logging', function(accounts) {
 
   })
 
-  /**
-   * Error: Returned error: VM Exception while processing transaction: revert issueKey() error -- Reason given: issueKey() error.
-   */
+
   it('should not enable a non-owner to message', async function () {
     try{
       let tx = await this.drs.createKey(this.service)
@@ -137,9 +129,7 @@ contract('HealthDRS :: Logging', function(accounts) {
 
   })
 
-  /**
-   * Error: Returned error: VM Exception while processing transaction: revert message() error 1 -- Reason given: message() error 1.
-   */
+
   it('should not enable a non service owner to message', async function () {
     try{
       let tx = await this.drs.createKey(this.service)

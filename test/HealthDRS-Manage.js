@@ -55,9 +55,7 @@ contract('HealthDRS :: Manage', function(accounts) {
     service1.should.be.equal(this.service)
   })
 
-/**
- * Error: Returned error: VM Exception while processing transaction: revert issueKey() error -- Reason given: issueKey() error.
- */
+
   it('should be able to get key count', async function() {
     await this.drs.createKey(this.service)
     await utils.advanceTimeAndBlock(10000);
@@ -75,9 +73,7 @@ contract('HealthDRS :: Manage', function(accounts) {
     retrievedKey.should.be.equal(key)
   })
 
-  /**
-   * Error: invalid bytes32 value (arg="dataKey", coderType="bytes32", value="permissions")
-   */
+
   it('A service should be able to store key data', async function() {
       let tx = await this.drs.createKey(this.service)
 
@@ -97,9 +93,7 @@ contract('HealthDRS :: Manage', function(accounts) {
 
    })
 
-  /**
-  * Error: invalid bytes32 value (arg="dataKey", coderType="bytes32", value="permissions")
-  */
+
   it('A non-owner should not be able to store key data', async function() {
     try{
       let tx = await this.drs.createKey(this.service)
