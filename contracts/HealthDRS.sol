@@ -16,7 +16,7 @@ contract HealthDRS is Ownable {
 
    address public latestContract = address(this);
    uint8 public version = 1;
-   uint public minimumHold = 0;
+   uint public minimumHold = 0;  //TODO remove with all references
    uint256 public balance = address(this).balance;
 
    struct Service {
