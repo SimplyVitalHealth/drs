@@ -25,9 +25,7 @@ contract('HealthDRS', function(accounts) {
   })
 
 
-  /**
-   * TypeError: Cannot read property 'transfer' of undefined
-   */
+
   it('non holder should be able to create a service after procuring health cash', async function() {
     let tx = await this.drs.createService(this.url,{from: accounts[1]})
     let service = tx.logs[0].args._service
