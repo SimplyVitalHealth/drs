@@ -16,7 +16,7 @@ contract('HealthDRS :: Ownable', function(accounts) {
 
   it('should have an owner', async function() {
     let owner = await this.ownable.owner()
-    owner.should.not.be.equal(0)    
+    owner.should.not.be.equal(0)
   })
 
   it('changes owner after transfer', async function() {
@@ -24,13 +24,13 @@ contract('HealthDRS :: Ownable', function(accounts) {
     await this.ownable.transferOwnership(other)
     let owner = await this.ownable.owner();
 
-    owner.should.be.equal(other)    
+    owner.should.be.equal(other)
   })
 
   it('should prevent non-owners from transfering', async function() {
     const other = accounts[1]
     let owner = await this.ownable.owner.call()
-    owner.should.not.be.equal(other)    
+    owner.should.not.be.equal(other)
 
     try {
       await this.ownable.transferOwnership(other, {from: other})
@@ -49,10 +49,23 @@ contract('HealthDRS :: Ownable', function(accounts) {
    */
   it('should guard ownership against stuck state', async function () {
     let originalOwner = await this.ownable.owner()
-    await this.ownable.transferOwnership(null, { from: originalOwner })
-    let newOwner = await this.ownable.owner()
-
-    newOwner.should.be.equal(originalOwner)
+    try{
+      await this.ownable.transferOwnership(null, { from: originalOwner })
+    }catch(error){
+      error.message.should.equal('invalid address (arg="newOwner", coderType="address", value=null)');
+    }
+    try{
+      await this.ownable.transferOwnership(0x0000000000000000000000000000000000000000, { from: originalOwner })
+      let newOwner = await this.ownable.owner()
+    }catch(error){
+      error.message.should.equal('invalid address (arg="newOwner", coderType="address", value=0)');
+    }
+    try{
+      await this.ownable.transferOwnership('0x0000000000000000000000000000000000000000', { from: originalOwner })
+      let newOwner = await this.ownable.owner()
+    }catch(error){
+      error.message.should.equal('Returned error: VM Exception while processing transaction: revert -- Reason given: Ownable: new owner is the zero address.');
+    }
   })
 
 })
