@@ -310,6 +310,7 @@ contract HealthDRS is Ownable {
 
       uint balanceBeforeTransfer = keys[key].owner.balance;
       keys[key].owner.transfer(salesOffers[key].price);
+      msg.sender.transfer(msg.value-salesOffers[key].price);
       assert(keys[key].owner.balance == balanceBeforeTransfer + salesOffers[key].price);
 
       emit KeySold(key, keys[key].owner, msg.sender, salesOffers[key].price);
