@@ -67,14 +67,9 @@ contract('HealthDRS :: Sell', function(accounts) {
 
     await this.drs.createTradeOffer(key, key2)
     await this.drs.createSalesOffer(key, accounts[1], 5, false)
-    try{
-      let to = await this.drs.tradeOffers(key)
-      to.should.equal('0x0000000000000000000000000000000000000000000000000000000000000000')
-    }
-    catch(error){
-      console.log('error:', error)
-      error.message.should.equal('Returned error: VM Exception while processing transaction: revert -- Reason given: tradeKey() error.');
-    }
+    let to = await this.drs.tradeOffers(key)
+    to.should.equal('0x0000000000000000000000000000000000000000000000000000000000000000')
+
   })
 
   it('non owner should not be able to list a key for sale', async function() {
@@ -122,13 +117,18 @@ contract('HealthDRS :: Sell', function(accounts) {
     //give account some HLTH to spend
     // this.token.transfer(accounts[1],5)
     // await this.token.approve(this.drs.address, 5, {from: accounts[1]})
-    await this.drs.purchaseKey(key, {from: accounts[1]})
+    let balanceAccount0 = await web3.eth.getBalance(accounts[0])
+    let balanceAccount1 = await web3.eth.getBalance(accounts[1])
 
+    let tx2 = await this.drs.purchaseKey(key, {from: accounts[1], value: 5})
+    let balanceAccount0After = await web3.eth.getBalance(accounts[0])
+    let balanceAccount1After = await web3.eth.getBalance(accounts[1])
+
+    console.log("TXS:", tx2, balanceAccount1, balanceAccount0, balanceAccount1After, balanceAccount0After)
     let owner = await this.drs.isKeyOwner(key,accounts[1])
     owner.should.equal(true)
-
-    let balance = await this.token.balanceOf(accounts[0])
-    balance.should.be.bignumber.equal(100,'Should have gotten 5 tokens back')
+    balanceAccount0After.should.be.equal(balanceAccount0+5,'Should have gotten 5 tokens back')
+    balanceAccount1After.should.be.equal(balanceAccount1-5,'Should have gotten 5 tokens back')
    })
 
   /**
