@@ -16,7 +16,6 @@ contract HealthDRS is Ownable {
 
    address public latestContract = address(this);
    uint8 public version = 1;
-   uint public minimumHold = 0;  //TODO remove with all references
    uint256 public balance = address(this).balance;
 
    struct Service {
@@ -93,22 +92,12 @@ contract HealthDRS is Ownable {
      _;
    }
 
-    // ensure account has currency
-    // TODO Remove and remove all references
-    modifier holdingCurrency(){
-        require(address(this).balance >= minimumHold, "holdingCurrency() error");
-        _;
-    }
 
    //prevent accidentally​ sending/trapping ether
    function() external {
        revert("function() line 104 error");
    }
 
-//   //require token specified at deployment
-//   constructor(ERC20 _token) public {
-//       token = _token;
-//   }
 
    function isKeyOwner(bytes32 key, address account)
        public
@@ -181,27 +170,17 @@ contract HealthDRS is Ownable {
         return owners[key].length;
     }
 
-   //user must authorize this contract to spend Health Cash (HLTH)
-   function authorizedToSpend() public view returns (uint) {
-    //    return token.allowance(msg.sender, address(this));
-   }
 
     //allow owner access to tokens erroneously transferred to this contract
    function recoverTokens(address payable _token, uint amount) public onlyOwner {
        _token.transfer(amount);
    }
 
-//    function setHealthCashToken(ERC20 _token) public onlyOwner {
-//        token = _token;
-//    }
 
    function setLatestContract(address _contract) public onlyOwner {
        latestContract = _contract;
    }
 
-//    function setMinimumHold(uint _minimumHold) public onlyOwner {
-//        minimumHold = _minimumHold;
-//    }
 
   /**
   * Create Services & Keys
@@ -209,7 +188,6 @@ contract HealthDRS is Ownable {
   */
    function createService(string memory url)
         public
-        holdingCurrency()
    {
        bytes32 id = keccak256(abi.encode(msg.sender, url));
        require(services[id].owner == address(0), "createService() error"); //prevent overwriting
@@ -222,7 +200,6 @@ contract HealthDRS is Ownable {
    function createKey(bytes32 service)
        public
        ownsService(service)
-       holdingCurrency()
    {
        issueKey(service, msg.sender);
    }
@@ -230,7 +207,6 @@ contract HealthDRS is Ownable {
    function issueKey(bytes32 service, address issueTo)
        public
        ownsService(service)
-       holdingCurrency()
    {
        bytes32 id = keccak256(abi.encode(service, issueTo, now));
        require(keys[id].owner == address(0), "issueKey() error");
@@ -250,7 +226,6 @@ contract HealthDRS is Ownable {
        public
        ownsKey(key)
        canShare(key)
-       holdingCurrency()
    {
        if (isKeyOwner(key, account) == false) {
            owners[key].push(account);
@@ -269,7 +244,6 @@ contract HealthDRS is Ownable {
    function unshareKey(bytes32 key, address account)
        public
        ownsKey(key)
-       holdingCurrency()
    {
        for (uint i = 0; i < owners[key].length; i++) {
            if (owners[key][i] == account) {
