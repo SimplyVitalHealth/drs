@@ -65,7 +65,7 @@ contract('HealthDRS :: Sell', function(accounts) {
     await this.drs.setKeyPermissions(key, true, true, true);
     await this.drs.setKeyPermissions(key2, true, true, true);
 
-    await this.drs.tradeKey(key, key2)
+    await this.drs.createTradeOffer(key, key2)
     await this.drs.createSalesOffer(key, accounts[1], 5, false)
     try{
       let to = await this.drs.tradeOffers(key)

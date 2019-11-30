@@ -16,15 +16,15 @@ contract HealthDRS is Ownable {
 
    address public latestContract = address(this);
    uint8 public version = 1;
-   uint256 public balance = address(this).balance;
+   mapping (address => uint) pendingWithdrawals;
 
    struct Service {
        string url;
-       address owner;
+       address payable owner;
    }
 
    struct Key {
-       address owner;
+       address payable owner;
        bool canShare;
        bool canTrade;
        bool canSell;
@@ -32,7 +32,7 @@ contract HealthDRS is Ownable {
    }
 
    struct SalesOffer {
-       address buyer;
+       address payable buyer;
        uint price;
        bool canSell;
    }
@@ -204,7 +204,7 @@ contract HealthDRS is Ownable {
        issueKey(service, msg.sender);
    }
 
-   function issueKey(bytes32 service, address issueTo)
+   function issueKey(bytes32 service, address payable issueTo)
        public
        ownsService(service)
    {
@@ -277,7 +277,7 @@ contract HealthDRS is Ownable {
    * Key owners can disable key selling at time
    * of sale to prevent re-selling.
    */
-   function createSalesOffer(bytes32 key, address buyer, uint price, bool _canSell)
+   function createSalesOffer(bytes32 key, address payable buyer, uint price, bool _canSell)
        public
        ownsKey(key)
        canSell(key)
@@ -300,18 +300,17 @@ contract HealthDRS is Ownable {
 
    function purchaseKey(bytes32 key)
        public
+       payable
        canSell(key)
    {
 
       //require explicit authority to spend tokens on the purchasers behalf
-      require(salesOffers[key].price <= balance, "purchaseKey() salesOffers[key].price error");
+      require(salesOffers[key].price <= msg.value, "purchaseKey() salesOffers[key].price error");
       require(salesOffers[key].buyer == msg.sender, "purchaseKey() salesOffers[key].buyer error");
 
-      /**
-      * Price in HLTH tokens is transferred from the purchaser
-      * to the primary owner of the key.
-      */
-    //   assert(balance.transfer(msg.sender, keys[key].owner, salesOffers[key].price));
+      uint balanceBeforeTransfer = keys[key].owner.balance;
+      keys[key].owner.transfer(salesOffers[key].price);
+      assert(keys[key].owner.balance == balanceBeforeTransfer + salesOffers[key].price);
 
       emit KeySold(key, keys[key].owner, msg.sender, salesOffers[key].price);
       keys[key].owner = msg.sender;
