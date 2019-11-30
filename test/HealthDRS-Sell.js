@@ -33,10 +33,8 @@ contract('HealthDRS :: Sell', function(accounts) {
       so = await this.drs.salesOffers(key)
       so[0].should.not.equal(accounts[1])
       so[1].should.not.be.bignumber.equal(5)
-    }
-    catch(error){
+    }catch(error){
       error.message.should.equal('Returned error: VM Exception while processing transaction: revert -- Reason given: canSell() key can\'t be sold error.');
-
     }
 
     //give key permission to sell - should suceed
@@ -49,9 +47,7 @@ contract('HealthDRS :: Sell', function(accounts) {
 
   })
 
-/**
- * Error: Returned error: VM Exception while processing transaction: revert issueKey() error-- Reason given: issueKey() error.
- */
+
   it('putting a key up for sale should negate an active trade offer', async function() {
     let tx = await this.drs.createKey(this.service)
     let key = tx.logs[0].args._key
@@ -128,7 +124,6 @@ contract('HealthDRS :: Sell', function(accounts) {
     console.log("TXS:", tx2, balanceAccount1, balanceAccount0, balanceAccount1After, balanceAccount0After)
     let owner = await this.drs.isKeyOwner(key,accounts[1])
     owner.should.equal(true)
-    balanceAccount1After.should.be.equal(balanceAccount1-5,'Should have gotten 5 tokens back')
     balanceAccount0After.should.be.equal(balanceAccount0+5,'Should have gotten 5 tokens back')
     balanceAccount1After.should.be.equal(balanceAccount1-5,'Should have gotten 5 tokens back')
    })
@@ -141,19 +136,23 @@ contract('HealthDRS :: Sell', function(accounts) {
     let key = tx.logs[0].args._key
     await this.drs.setKeyPermissions(key, true, false, true);
     await this.drs.shareKey(key, accounts[1])
-     await this.drs.createSalesOffer(key, accounts[1], 5, false)
+    let balanceAccount0 = await web3.eth.getBalance(accounts[0])
 
-    //give account some HLTH to spend
-    this.token.transfer(accounts[1],5)
-    await this.token.approve(this.drs.address, 5, {from: accounts[1]})
-    await this.drs.purchaseKey(key, {from: accounts[1]})
+    try{
+      await this.drs.createSalesOffer(key, accounts[1], 5, false)
 
-    await this.drs.unshareKey(key, accounts[1])
-    let owner = await this.drs.isKeyOwner(key,accounts[1])
+      //give account some HLTH to spend
+      await this.drs.purchaseKey(key, {from: accounts[1]})
+    }catch(error){
+        error.message.should.equal('Returned error: VM Exception while processing transaction: revert -- Reason given: canSell() key does not exist error.');
+      }
+      let balanceAccount0After = await web3.eth.getBalance(accounts[0])
+      await this.drs.unshareKey(key, accounts[1])
+      let owner = await this.drs.isKeyOwner(key,accounts[1])
+
     owner.should.equal(false)
 
-    let balance = await this.token.balanceOf(accounts[0])
-    balance.should.be.bignumber.equal(95,'Should not have gotten 5 tokens back')
+    balanceAccount0.should.equal(balanceAccount0After,'Should not have recieved ether')
    })
 
 
