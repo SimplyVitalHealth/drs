@@ -133,7 +133,6 @@ contract('HealthDRS :: Sell', function(accounts) {
     new BN(balanceAccount0After).toString().should.be.equal(new BN(balanceAccount0).add(new BN(5)).toString(),'Should have gotten 5 tokens back')
     new BN(balanceAccount1After).toString().should.be.equal(new BN(balanceAccount1).sub(totalDiff).toString(),'Should have gotten 5 tokens back')
    })
-   return
 
   /**
    * Error: Returned error: VM Exception while processing transaction: revert canSell() key does not exist error -- Reason given: canSell() key does not exist error.
