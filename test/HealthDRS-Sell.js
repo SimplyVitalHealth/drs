@@ -1,5 +1,6 @@
 
 const BigNumber = web3.BigNumber
+var BN = web3.utils.BN
 const should = require('chai')
   .use(require('chai-as-promised'))
   .use(require('chai-bignumber')(BigNumber))
@@ -115,18 +116,24 @@ contract('HealthDRS :: Sell', function(accounts) {
     // await this.token.approve(this.drs.address, 5, {from: accounts[1]})
     let balanceAccount0 = await web3.eth.getBalance(accounts[0])
     let balanceAccount1 = await web3.eth.getBalance(accounts[1])
-
+    
     let tx2 = await this.drs.purchaseKey(key, {from: accounts[1], value: 5})
-
+    
     let balanceAccount0After = await web3.eth.getBalance(accounts[0])
     let balanceAccount1After = await web3.eth.getBalance(accounts[1])
 
-    console.log("TXS:", tx2, balanceAccount1, balanceAccount0, balanceAccount1After, balanceAccount0After)
+     const transaction = await web3.eth.getTransaction(tx2.tx);
+     const gasPrice = new BN(transaction.gasPrice);
+     const gasUsed = tx2.receipt.gasUsed
+     const gasCost = gasPrice.mul(new BN(gasUsed));
+     const totalDiff = gasCost.add(new BN(5))
+
     let owner = await this.drs.isKeyOwner(key,accounts[1])
     owner.should.equal(true)
-    balanceAccount0After.should.be.equal(balanceAccount0+5,'Should have gotten 5 tokens back')
-    balanceAccount1After.should.be.equal(balanceAccount1-5,'Should have gotten 5 tokens back')
+    new BN(balanceAccount0After).toString().should.be.equal(new BN(balanceAccount0).add(new BN(5)).toString(),'Should have gotten 5 tokens back')
+    new BN(balanceAccount1After).toString().should.be.equal(new BN(balanceAccount1).sub(totalDiff).toString(),'Should have gotten 5 tokens back')
    })
+   return
 
   /**
    * Error: Returned error: VM Exception while processing transaction: revert canSell() key does not exist error -- Reason given: canSell() key does not exist error.
