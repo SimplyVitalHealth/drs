@@ -21,9 +21,7 @@ contract('HealthDRS :: Sell', function(accounts) {
     this.service = tx.logs[0].args._service
   })
 
-  /**
-   * Error: Returned error: VM Exception while processing transaction: revert canSell() key can't be sold error -- Reason given: canSell() key can't be sold error.
-   */
+
   it('key owner should be able to put a key up for sale only if salable', async function() {
     let tx = await this.drs.createKey(this.service)
     let key = tx.logs[0].args._key
@@ -102,9 +100,7 @@ contract('HealthDRS :: Sell', function(accounts) {
     }
    })
 
-  /**
-  * TypeError: Cannot read property 'transfer' of undefined
-  */
+
    it('should be able to purchase an offered key', async function() {
     let tx = await this.drs.createKey(this.service)
     let key = tx.logs[0].args._key
@@ -116,9 +112,9 @@ contract('HealthDRS :: Sell', function(accounts) {
     // await this.token.approve(this.drs.address, 5, {from: accounts[1]})
     let balanceAccount0 = await web3.eth.getBalance(accounts[0])
     let balanceAccount1 = await web3.eth.getBalance(accounts[1])
-    
+
     let tx2 = await this.drs.purchaseKey(key, {from: accounts[1], value: 5})
-    
+
     let balanceAccount0After = await web3.eth.getBalance(accounts[0])
     let balanceAccount1After = await web3.eth.getBalance(accounts[1])
 
@@ -146,6 +142,7 @@ contract('HealthDRS :: Sell', function(accounts) {
 
       //give account some HLTH to spend
       await this.drs.purchaseKey(key, {from: accounts[1]})
+
     }catch(error){
         error.message.should.equal('Returned error: VM Exception while processing transaction: revert canSell() key does not exist error -- Reason given: canSell() key does not exist error.');
       }
@@ -183,18 +180,13 @@ contract('HealthDRS :: Sell', function(accounts) {
     so[1].toNumber().should.be.equal(50)
    })
 
-   /**
-    * TypeError: Cannot read property 'transfer' of undefined
-    */
+
    it('key owner can create a sales offer that prevents subsequent sales', async function() {
     let tx = await this.drs.createKey(this.service)
     let key = tx.logs[0].args._key
     await this.drs.setKeyPermissions(key, false, false, true)
     await this.drs.createSalesOffer(key, accounts[1], 5, false)
-
-    this.token.transfer(accounts[1],5)
-    await this.token.approve(this.drs.address, 5, {from: accounts[1]})
-    await this.drs.purchaseKey(key, {from: accounts[1]})
+    await this.drs.purchaseKey(key, {from: accounts[1], value: 5})
 
     key = await this.drs.getKey(key)
     key[3].should.equal(false) //canSell
