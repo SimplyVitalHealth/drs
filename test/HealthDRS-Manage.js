@@ -105,7 +105,7 @@ contract('HealthDRS :: Manage', function(accounts) {
     }
     catch(error){
       //valid service error, because after failing the key due to not being an owner, it then checks if its a valid service and throws an error there as well
-      error.message.should.equal('Returned error: VM Exception while processing transaction: revert -- Reason given: ownsService() error.');
+      error.message.should.equal('Returned error: VM Exception while processing transaction: revert ownsService() error -- Reason given: ownsService() error.');
 
     }
   })

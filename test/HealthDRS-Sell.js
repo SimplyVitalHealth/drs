@@ -35,7 +35,7 @@ contract('HealthDRS :: Sell', function(accounts) {
       so[0].should.not.equal(accounts[1])
       so[1].should.not.be.bignumber.equal(5)
     }catch(error){
-      error.message.should.equal('Returned error: VM Exception while processing transaction: revert -- Reason given: canSell() key can\'t be sold error.');
+      error.message.should.equal('Returned error: VM Exception while processing transaction: revert canSell() key can\'t be sold error -- Reason given: canSell() key can\'t be sold error.');
     }
 
     //give key permission to sell - should suceed
@@ -98,7 +98,7 @@ contract('HealthDRS :: Sell', function(accounts) {
       owner.should.equal(true)
     }
     catch(error){
-      error.message.should.equal('Returned error: VM Exception while processing transaction: revert -- Reason given: canSell() key can\'t be sold error.');
+       error.message.should.equal('Returned error: VM Exception while processing transaction: revert canSell() key can\'t be sold error -- Reason given: canSell() key can\'t be sold error.');
     }
    })
 
@@ -122,16 +122,13 @@ contract('HealthDRS :: Sell', function(accounts) {
     let balanceAccount0After = await web3.eth.getBalance(accounts[0])
     let balanceAccount1After = await web3.eth.getBalance(accounts[1])
 
-     const transaction = await web3.eth.getTransaction(tx2.tx);
-     const gasPrice = new BN(transaction.gasPrice);
-     const gasUsed = tx2.receipt.gasUsed
-     const gasCost = gasPrice.mul(new BN(gasUsed));
-     const totalDiff = gasCost.add(new BN(5))
+    const transaction = await web3.eth.getTransaction(tx2.tx);
+    const totalCost = new BN(5).add(new BN(transaction.gasPrice).mul(new BN(tx2.receipt.gasUsed)))
 
     let owner = await this.drs.isKeyOwner(key,accounts[1])
     owner.should.equal(true)
     new BN(balanceAccount0After).toString().should.be.equal(new BN(balanceAccount0).add(new BN(5)).toString(),'Should have gotten 5 tokens back')
-    new BN(balanceAccount1After).toString().should.be.equal(new BN(balanceAccount1).sub(totalDiff).toString(),'Should have gotten 5 tokens back')
+    new BN(balanceAccount1After).toString().should.be.equal(new BN(balanceAccount1).sub(totalCost).toString(),'Should have gotten 5 tokens back')
    })
 
   /**
@@ -145,12 +142,12 @@ contract('HealthDRS :: Sell', function(accounts) {
     let balanceAccount0 = await web3.eth.getBalance(accounts[0])
 
     try{
-      await this.drs.createSalesOffer(key, accounts[1], 5, false)
+      await this.drs.createSalesOffer(key, accounts[1], 5, false);
 
       //give account some HLTH to spend
       await this.drs.purchaseKey(key, {from: accounts[1]})
     }catch(error){
-        error.message.should.equal('Returned error: VM Exception while processing transaction: revert -- Reason given: canSell() key does not exist error.');
+        error.message.should.equal('Returned error: VM Exception while processing transaction: revert canSell() key does not exist error -- Reason given: canSell() key does not exist error.');
       }
       let balanceAccount0After = await web3.eth.getBalance(accounts[0])
       await this.drs.unshareKey(key, accounts[1])
@@ -158,7 +155,10 @@ contract('HealthDRS :: Sell', function(accounts) {
 
     owner.should.equal(false)
 
-    balanceAccount0.should.equal(balanceAccount0After,'Should not have recieved ether')
+    const transaction = await web3.eth.getTransaction(tx.tx);
+    const totalCost = new BN(transaction.gasPrice).mul(new BN(27184));
+
+    new BN(balanceAccount0).sub(totalCost).toString().should.equal(new BN(balanceAccount0After).toString(),'Should not have recieved ether')
    })
 
 
