@@ -1,7 +1,6 @@
 pragma solidity ^0.5.0;
 
 import '../node_modules/openzeppelin-solidity/contracts/ownership/Ownable.sol';
-import '../node_modules/openzeppelin-solidity/contracts/token/ERC20/ERC20.sol';
 
 /**
 * Health Decentralized Record Service (DRS)
@@ -172,9 +171,9 @@ contract HealthDRS is Ownable {
 
 
     //allow owner access to tokens erroneously transferred to this contract
-   function recoverTokens(address payable _token, uint amount) public onlyOwner {
+   /*function recoverTokens(address payable _token, uint amount) public onlyOwner {
        _token.transfer(amount);
-   }
+   }*/
 
 
    function setLatestContract(address _contract) public onlyOwner {

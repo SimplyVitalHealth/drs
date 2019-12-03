@@ -2,7 +2,7 @@
 [![Hex.pm](https://img.shields.io/hexpm/l/plug.svg?style=flat-square)](https://github.com/Health-Nexus/drs/blob/master/LICENSE)
 <img align="right" src="./assets/HN_token_transparent.png?raw=true" height="348">
 
-An Ethereum smart-contract for creating a decentralized record service using the EIP 20 token Health Cash (HLTH). This is project is part of phase one of Health Nexus, the public permissioned blockchain for healthcare.<br>
+An Ethereum smart-contract for creating a decentralized record service using the on chain currency. This is project is part of Health Nexus, the public permissioned blockchain for healthcare.<br>
 
 Features:
 
@@ -10,7 +10,7 @@ Features:
 * Create and issue keys for services
 * Permission keys for sharing, selling, and trading
 * Share keys & services with multiple accounts
-* Sell keys for Health Cash (HLTH)
+* Sell keys for on chain currency
 * Trade keys
 
 <details>
@@ -29,7 +29,7 @@ Features:
 
 This smart-contract enables the registration of data services bound to unique endpoint urls. Registering a service creates an immutable record of that service and associated owner. Service owners can then create and issue keys for that service.
 
-Keys are unique ownable records that can be used to verify the identity of valid service consumers though a process that requires authenticating messages signed by the key owner. Service owners can permission keys extending the functionality to enable trading, sharing, and the selling of keys using Health Cash (HLTH).
+Keys are unique ownable records that can be used to verify the identity of valid service consumers though a process that requires authenticating messages signed by the key owner. Service owners can permission keys extending the functionality to enable trading, sharing, and the selling of keys using on chain currency.
 
 
 ## Installation
@@ -54,10 +54,6 @@ $ truffle compile
 # Deploy contracts
 $ truffle migrate
 ```
-## Replace Health Token
-Health Token is required for migration of the compiled contracts. For development: Install Health-Nexus/healthcashtoken by following the steps of installation, note a string labeled "healthcashtoken" which can be found in the output obtained after installing the same.
-
-Replace the existing token on line no.2 in 'migrations/2_deploy_contracts.js'with the one obtained from above.
 
 ## Testing
 
@@ -106,8 +102,8 @@ improvements.​ ​ We​ ​ wish​ ​ the​ ​ SVH​ ​ team​ ​ wel
 
 Yo Sub Kwon, Founder Hosho Group
 
-Read the [complete audit report](https://github.com/Health-Nexus/drs/blob/master/SimplyVitalHealthContractAudit.pdf). 
-Read the [updated audit report](https://github.com/Health-Nexus/drs/blob/master/SimplyVitalHealthContractAuditUpdatedVersion.pdf). 
+Read the [complete audit report](https://github.com/Health-Nexus/drs/blob/master/SimplyVitalHealthContractAudit.pdf).
+Read the [updated audit report](https://github.com/Health-Nexus/drs/blob/master/SimplyVitalHealthContractAuditUpdatedVersion.pdf).
 
 
 ## Credits
@@ -120,8 +116,10 @@ Contributors:
 
 * **Lucas Hendren** - [lhendre](https://github.com/lhendre)
 * **David Akers** - [davidmichaelakers](https://github.com/davidmichaelakers)
+* **Kevin Cheli** - [kcheli](https://github.com/kcheli)
+* **Ninad P.Chaudhari** - [ninadpchaudhari](https://github.com/ninadpchaudhari)
+
 
 ## License
 
 [Apache License 2.0](https://github.com/Health-Nexus/drs/blob/master/LICENSE)
-
