@@ -15,7 +15,6 @@ contract HealthDRS is Ownable {
 
    address public latestContract = address(this);
    uint8 public version = 1;
-   mapping (address => uint) pendingWithdrawals;
 
    struct Service {
        string url;
