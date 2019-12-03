@@ -1,7 +1,6 @@
 pragma solidity ^0.5.0;
 
 import '../node_modules/openzeppelin-solidity/contracts/ownership/Ownable.sol';
-import '../node_modules/openzeppelin-solidity/contracts/token/ERC20/ERC20.sol';
 
 /**
 * Health Decentralized Record Service (DRS)
@@ -14,18 +13,16 @@ import '../node_modules/openzeppelin-solidity/contracts/token/ERC20/ERC20.sol';
 
 contract HealthDRS is Ownable {
 
-   ERC20 public token;
    address public latestContract = address(this);
    uint8 public version = 1;
-   uint public minimumHold = 1000;
 
    struct Service {
        string url;
-       address owner;
+       address payable owner;
    }
 
    struct Key {
-       address owner;
+       address payable owner;
        bool canShare;
        bool canTrade;
        bool canSell;
@@ -33,7 +30,7 @@ contract HealthDRS is Ownable {
    }
 
    struct SalesOffer {
-       address buyer;
+       address payable buyer;
        uint price;
        bool canSell;
    }
@@ -93,21 +90,18 @@ contract HealthDRS is Ownable {
      _;
    }
 
-   //certain functions require the user to have tokens
-   modifier holdingTokens() {
-     require(token.balanceOf(msg.sender) >= minimumHold, "holdingTokens() error");
-     _;
-   }
 
    //prevent accidentally​ sending/trapping ether
    function() external {
        revert("function() line 104 error");
    }
 
-  //require token specified at deployment
-  constructor(ERC20 _token) public {
-      token = _token;
-  }
+   //function - retrieve ether that was sent via coinbase/self destruct
+   function zero() public onlyOwner {
+     address payable _owner = address(uint160(this.owner()));
+     _owner.transfer(address(this).balance);
+   }
+
 
    function isKeyOwner(bytes32 key, address account)
        public
@@ -180,27 +174,11 @@ contract HealthDRS is Ownable {
         return owners[key].length;
     }
 
-   //user must authorize this contract to spend Health Cash (HLTH)
-   function authorizedToSpend() public view returns (uint) {
-       return token.allowance(msg.sender, address(this));
-   }
-
-    //allow owner access to tokens erroneously transferred to this contract
-   function recoverTokens(address payable _token, uint amount) public onlyOwner {
-       _token.transfer(amount);
-   }
-
-   function setHealthCashToken(ERC20 _token) public onlyOwner {
-       token = _token;
-   }
 
    function setLatestContract(address _contract) public onlyOwner {
        latestContract = _contract;
    }
 
-   function setMinimumHold(uint _minimumHold) public onlyOwner {
-       minimumHold = _minimumHold;
-   }
 
   /**
   * Create Services & Keys
@@ -208,7 +186,6 @@ contract HealthDRS is Ownable {
   */
    function createService(string memory url)
         public
-        holdingTokens()
    {
        bytes32 id = keccak256(abi.encode(msg.sender, url));
        require(services[id].owner == address(0), "createService() error"); //prevent overwriting
@@ -221,15 +198,13 @@ contract HealthDRS is Ownable {
    function createKey(bytes32 service)
        public
        ownsService(service)
-       holdingTokens()
    {
        issueKey(service, msg.sender);
    }
 
-   function issueKey(bytes32 service, address issueTo)
+   function issueKey(bytes32 service, address payable issueTo)
        public
        ownsService(service)
-       holdingTokens()
    {
        bytes32 id = keccak256(abi.encode(service, issueTo, now));
        require(keys[id].owner == address(0), "issueKey() error");
@@ -249,7 +224,6 @@ contract HealthDRS is Ownable {
        public
        ownsKey(key)
        canShare(key)
-       holdingTokens()
    {
        if (isKeyOwner(key, account) == false) {
            owners[key].push(account);
@@ -268,7 +242,6 @@ contract HealthDRS is Ownable {
    function unshareKey(bytes32 key, address account)
        public
        ownsKey(key)
-       holdingTokens()
    {
        for (uint i = 0; i < owners[key].length; i++) {
            if (owners[key][i] == account) {
@@ -302,7 +275,7 @@ contract HealthDRS is Ownable {
    * Key owners can disable key selling at time
    * of sale to prevent re-selling.
    */
-   function createSalesOffer(bytes32 key, address buyer, uint price, bool _canSell)
+   function createSalesOffer(bytes32 key, address payable buyer, uint price, bool _canSell)
        public
        ownsKey(key)
        canSell(key)
@@ -325,18 +298,17 @@ contract HealthDRS is Ownable {
 
    function purchaseKey(bytes32 key)
        public
+       payable
        canSell(key)
    {
 
-      //require explicit authority to spend tokens on the purchasers behalf
-      require(salesOffers[key].price <= authorizedToSpend(), "purchaseKey() salesOffers[key].price error");
+      require(salesOffers[key].price <= msg.value, "purchaseKey() salesOffers[key].price error");
       require(salesOffers[key].buyer == msg.sender, "purchaseKey() salesOffers[key].buyer error");
 
-      /**
-      * Price in HLTH tokens is transferred from the purchaser
-      * to the primary owner of the key.
-      */
-      assert(token.transferFrom(msg.sender, keys[key].owner, salesOffers[key].price));
+      uint balanceBeforeTransfer = keys[key].owner.balance;
+      keys[key].owner.transfer(salesOffers[key].price);
+      msg.sender.transfer(msg.value-salesOffers[key].price);
+      assert(keys[key].owner.balance == balanceBeforeTransfer + salesOffers[key].price);
 
       emit KeySold(key, keys[key].owner, msg.sender, salesOffers[key].price);
       keys[key].owner = msg.sender;

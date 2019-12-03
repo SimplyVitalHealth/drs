@@ -12,8 +12,8 @@ var isAddress = require('./helpers/isAddress')
 contract('HealthDRS :: Share', function(accounts) {
 
   beforeEach(async function() {
-    this.token = await HealthCashMock.new()
-    this.drs = await HealthDRS.new(this.token.address)
+    // this.token = await HealthCashMock.new()
+    this.drs = await HealthDRS.new();  
     this.url = 'https://blogs.scientificamerican.com/observations/consciousness-goes-deeper-than-you-think/'    
   })
   
@@ -75,11 +75,17 @@ contract('HealthDRS :: Share', function(accounts) {
     ownsKey.should.equal(false)
 
     //share key
-    await this.drs.shareKey(childKey, accounts[1])
-
-    ownsKey = await this.drs.isKeyOwner(childKey, accounts[1])
-    ownsKey.should.equal(false)
-  })
-
+    try{
+      await this.drs.shareKey(childKey, accounts[1])
+    }
+    catch(e){
+      if (e) {
+        ownsKey = await this.drs.isKeyOwner(childKey, accounts[1])
+        ownsKey.should.equal(false)
+      } else {
+        (true).should.equal(false);
+      }
+    }
+  });
 
 })
