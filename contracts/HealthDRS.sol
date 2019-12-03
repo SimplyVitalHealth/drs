@@ -97,6 +97,12 @@ contract HealthDRS is Ownable {
        revert("function() line 104 error");
    }
 
+   //function - retrieve ether that was sent via coinbase/self destruct
+   function zero() public onlyOwner {
+     address payable _owner = address(uint160(this.owner()));
+     _owner.transfer(address(this).balance);
+   }
+
 
    function isKeyOwner(bytes32 key, address account)
        public
@@ -168,12 +174,6 @@ contract HealthDRS is Ownable {
     {
         return owners[key].length;
     }
-
-
-    //allow owner access to tokens erroneously transferred to this contract
-   /*function recoverTokens(address payable _token, uint amount) public onlyOwner {
-       _token.transfer(amount);
-   }*/
 
 
    function setLatestContract(address _contract) public onlyOwner {
@@ -303,7 +303,6 @@ contract HealthDRS is Ownable {
        canSell(key)
    {
 
-      //require explicit authority to spend tokens on the purchasers behalf
       require(salesOffers[key].price <= msg.value, "purchaseKey() salesOffers[key].price error");
       require(salesOffers[key].buyer == msg.sender, "purchaseKey() salesOffers[key].buyer error");
 
