@@ -44,7 +44,7 @@ contract('HealthDRS :: Logging', function(accounts) {
       tx.logs.length.should.equal(0);
     }
     catch(error){
-      error.message.should.equal('Returned error: VM Exception while processing transaction: revert -- Reason given: log() error.');
+      error.message.should.equal('Returned error: VM Exception while processing transaction: revert log() error -- Reason given: log() error.');
     }
   })
 
@@ -58,7 +58,7 @@ contract('HealthDRS :: Logging', function(accounts) {
     }
     catch(error){
       //valid service error, because after failing the key due to not being an owner, it then checks if its a valid service and throws an error there as well
-      error.message.should.equal('Returned error: VM Exception while processing transaction: revert -- Reason given: validService() error.');
+      error.message.should.equal('Returned error: VM Exception while processing transaction: revert validService() error -- Reason given: validService() error.');
 
     }
   })
@@ -112,7 +112,7 @@ contract('HealthDRS :: Logging', function(accounts) {
       tx = await this.drs.message(key1, key2, 'init', 'data', { from: accounts[1] })
       tx.logs.length.should.equal(0)
     }catch(error){
-      error.message.should.equal('Returned error: VM Exception while processing transaction: revert -- Reason given: validService() error.');
+      error.message.should.equal('Returned error: VM Exception while processing transaction: revert validService() error -- Reason given: validService() error.');
     }
   })
 
@@ -138,7 +138,7 @@ contract('HealthDRS :: Logging', function(accounts) {
       tx = await this.drs.message(this.service, key1, 'init', 'data', { from: accounts[1] })
       tx.logs.length.should.equal(0)
     }catch(error){
-      error.message.should.equal('Returned error: VM Exception while processing transaction: revert -- Reason given: message() error 1.');
+      error.message.should.equal('Returned error: VM Exception while processing transaction: revert message() error 1 -- Reason given: message() error 1.');
     }
   })
 

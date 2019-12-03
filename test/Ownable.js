@@ -64,7 +64,7 @@ contract('HealthDRS :: Ownable', function(accounts) {
       await this.ownable.transferOwnership('0x0000000000000000000000000000000000000000', { from: originalOwner })
       let newOwner = await this.ownable.owner()
     }catch(error){
-      error.message.should.equal('Returned error: VM Exception while processing transaction: revert -- Reason given: Ownable: new owner is the zero address.');
+      error.message.should.equal('Returned error: VM Exception while processing transaction: revert Ownable: new owner is the zero address -- Reason given: Ownable: new owner is the zero address.');
     }
   })
 

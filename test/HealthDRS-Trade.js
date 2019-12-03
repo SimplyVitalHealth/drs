@@ -67,7 +67,7 @@ contract('HealthDRS :: Trade', function(accounts) {
       await this.drs.createTradeOffer(key2, key1, { from: accounts[1] })
       await this.drs.tradeKey(key1, key2)
     }catch(error){
-      error.message.should.equal('Returned error: VM Exception while processing transaction: revert -- Reason given: canTrade() owners[key].length error.');
+      error.message.should.equal('Returned error: VM Exception while processing transaction: revert canTrade() owners[key].length error -- Reason given: canTrade() owners[key].length error.');
     }
 
     owner = await this.drs.isKeyOwner(key2, accounts[0])
@@ -95,7 +95,7 @@ contract('HealthDRS :: Trade', function(accounts) {
       await this.drs.createTradeOffer(key2, key1, { from: accounts[1] })
       await this.drs.tradeKey(key1, key2)
     }catch(error){
-      error.message.should.equal('Returned error: VM Exception while processing transaction: revert -- Reason given: canTrade() keys[key].canTrade error.');
+      error.message.should.equal('Returned error: VM Exception while processing transaction: revert canTrade() keys[key].canTrade error -- Reason given: canTrade() keys[key].canTrade error.');
     }
     owner = await this.drs.isKeyOwner(key2, accounts[0])
     owner.should.equal(false)
@@ -141,7 +141,7 @@ contract('HealthDRS :: Trade', function(accounts) {
     //trying to trade a key we don't own
       await this.drs.tradeKey(key1, key2, { from: accounts[1] })
     }catch(error){
-      error.message.should.equal('Returned error: VM Exception while processing transaction: revert -- Reason given: ownsKey() error.');
+      error.message.should.equal('Returned error: VM Exception while processing transaction: revert ownsKey() error -- Reason given: ownsKey() error.');
     }
     owner = await this.drs.isKeyOwner(key2, accounts[0])
     owner.should.not.equal(true)
