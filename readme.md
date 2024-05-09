@@ -1,6 +1,5 @@
 # Health Nexus :: DRS
-[![Hex.pm](https://img.shields.io/hexpm/l/plug.svg?style=flat-square)](https://github.com/Health-Nexus/drs/blob/master/LICENSE)
-<img align="right" src="./assets/HN_token_transparent.png?raw=true" height="348">
+
 
 An Ethereum smart-contract for creating a decentralized record service using the on chain currency. This is project is part of Health Nexus, the public permissioned blockchain for healthcare.<br>
 
