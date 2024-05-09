@@ -1,7 +1,7 @@
 # Health Nexus :: DRS
 
 
-An Ethereum smart-contract for creating a decentralized record service using the on chain currency. This is project is part of Health Nexus, the public permissioned blockchain for healthcare.<br>
+An Ethereum smart-contract for creating a decentralized record service using the on chain currency. This project is part of Health Nexus, the public permissioned blockchain for healthcare.<br>
 
 Features:
 
